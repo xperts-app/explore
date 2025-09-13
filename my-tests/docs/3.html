@@ -42,17 +42,18 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
-      authDomain: "xperts-data.firebaseapp.com",
-      projectId: "xperts-data",
-      storageBucket: "xperts-data.firebasestorage.app",
-      messagingSenderId: "934675149024",
-      appId: "1:934675149024:web:23486a5f38f65f103ce085"
+      apiKey: "AIzaSyBnkCh8r_Ewx8lbr0RBB7i6M-xdABphd9w",
+      authDomain: "initialisation-cfb78.firebaseapp.com",
+      projectId: "initialisation-cfb78",
+      storageBucket: "initialisation-cfb78.firebasestorage.app",
+      messagingSenderId: "217554560023",
+      appId: "1:217554560023:web:5ca34ac80acd8aba872852",
+      measurementId: "G-S9T0PWGZQX"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- AUTO REDIRECT if already logged in ---
+    // Auto redirect if already logged in
     if (localStorage.getItem('loggedInUserId')) {
       window.location.href = "2.html";
     }
@@ -69,6 +70,7 @@
     submitBtn.addEventListener('click', async () => {
       errorMsg.textContent = '';
       submitBtn.disabled = true;
+
       const mobile = mobileInput.value.trim();
       if (!/^\d{10}$/.test(mobile)) {
         errorMsg.textContent = 'Enter a valid 10-digit number.';
@@ -78,7 +80,7 @@
       if (!isLoginStep) {
         const snapshot = await db.collection('users').where('mobileNumber','==',mobile).get();
         if (snapshot.empty) {
-          errorMsg.textContent = 'No account found. Please sign up.';
+          errorMsg.textContent = 'No account found.';
           submitBtn.disabled = false; return;
         }
         snapshot.forEach(doc => userData = { id: doc.id, ...doc.data() });
@@ -91,13 +93,12 @@
         const password = passwordInput.value;
         if (!password) { errorMsg.textContent = 'Password required.'; submitBtn.disabled = false; return; }
         if (userData.password !== password) { errorMsg.textContent = 'Incorrect password.'; submitBtn.disabled = false; return; }
-        
+
         // Save session
         localStorage.setItem('loggedInUserId', userData.id);
-        localStorage.setItem('loggedInUserRole', userData.role);
         localStorage.setItem('loggedInUserClass', userData.class);
 
-        window.location.href = "2.html"; // go to app page
+        window.location.href = "2.html"; // go to documents page
       }
     });
   </script>
