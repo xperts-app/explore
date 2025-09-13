@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz in Progress</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Swiper.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <style>
+        :root {
+            --primary-blue: #007bff;
+            --light-gray: #f0f2f5;
+            --dark-gray: #333;
+            --border-color: #dee2e6;
+            --correct-green: #28a745;
+            --incorrect-red: #dc3545;
+            --selected-blue: #e7f3ff;
+            --medium-orange: #ffc107;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            overflow: hidden; /* Prevent scrolling body */
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .timer, .question-counter {
+            font-weight: 500;
+        }
+        .bookmark-icon {
+            font-size: 1.5rem; cursor: pointer;
+        }
+
+        /* Main content */
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .difficulty-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background-color: var(--medium-orange);
+            color: white;
+        }
+        .question-text {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .question-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .option-btn {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+        }
+        .option-btn.selected {
+            border-color: var(--primary-blue);
+            background-color: var(--selected-blue);
+        }
+        .option-prefix {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .option-content img { max-width: 100%; border-radius: 5px; }
+
+        /* Loader */
+        #loader {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        /* Swiper.js styles */
+        .swiper-container {
+            width: 100%;
+            height: 100%;
+        }
+        .swiper-slide {
+            box-sizing: border-box;
+            height: auto; /* Important for scrollable content */
+        }
+        
+        /* Footer navigation */
+        .footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .nav-btn, .submit-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-blue);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .prev-btn {
+            background: white;
+            color: var(--primary-blue);
+        }
+        .next-btn {
+            background: var(--primary-blue);
+            color: white;
+            flex-grow: 1;
+        }
+         .submit-btn {
+            background: var(--correct-green);
+            color: white;
+            border-color: var(--correct-green);
+            flex-grow: 1;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+    <div id="loader">
+        <p>Preparing your test...</p>
+    </div>
+
+    <div class="container" style="display: none;">
+        <header>
+            <div id="timer" class="timer">--:--</div>
+            <div id="question-counter" class="question-counter">Question 1 / N</div>
+            <div class="bookmark-icon">&#128278;</div>
+        </header>
+        
+        <!-- Swiper -->
+        <div class="swiper-container">
+            <div class="swiper-wrapper" id="quiz-container">
+                <!-- Questions will be injected here by JS -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <button class="nav-btn prev-btn" id="prev-question">Previous</button>
+            <button class="nav-btn next-btn" id="next-question">Next</button>
+            <button class="submit-btn" id="submit-test">Submit Test</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Swiper.js JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <script>
+        // Firebase Config for Questions
+        const questionsConfig = {
+            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+            authDomain: "question-metabase.firebaseapp.com",
+            projectId: "question-metabase",
+            storageBucket: "question-metabase.firebasestorage.app",
+            messagingSenderId: "770698198753",
+            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+            measurementId: "G-6ZP1FPMKSJ"
+        };
+
+        // Initialize a named Firebase app for questions
+        const questionsApp = firebase.initializeApp(questionsConfig, 'questionsApp');
+        const db = questionsApp.firestore();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loader = document.getElementById('loader');
+            const container = document.querySelector('.container');
+            const quizContainer = document.getElementById('quiz-container');
+            const questionCounterEl = document.getElementById('question-counter');
+            const timerEl = document.getElementById('timer');
+            const nextBtn = document.getElementById('next-question');
+            const prevBtn = document.getElementById('prev-question');
+            const submitBtn = document.getElementById('submit-test');
+
+            let swiper;
+            let quizData = [];
+            let userAnswers = {}; // { questionId: selectedIndex }
+            let timerInterval;
+            let totalTimeInSeconds;
+            let timeTaken = 0;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const chapterNames = urlParams.get('chapters')?.split(',') || [];
+            const difficulty = urlParams.get('difficulty') || 'Easy';
+            const count = parseInt(urlParams.get('count'), 10) || 10;
+            const timeLimit = urlParams.get('time');
+
+            if (chapterNames.length === 0) {
+                loader.innerHTML = '<p style="color: red;">Error: No chapters selected. Please go back.</p>';
+                return;
+            }
+
+            // 1. Fetch Questions
+            try {
+                const querySnapshot = await db.collection('questions')
+                    .where('chapterName', 'in', chapterNames)
+                    .where('difficulty', '==', difficulty)
+                    .limit(count)
+                    .get();
+
+                if (querySnapshot.empty) {
+                    loader.innerHTML = `<p>Sorry, we couldn't find enough questions matching your criteria. Please try different chapters or difficulty.</p>`;
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    quizData.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Shuffle the questions for variety
+                quizData.sort(() => Math.random() - 0.5);
+
+                renderQuestions();
+                initializeSwiper();
+                startTimer();
+
+                container.style.display = 'flex';
+                loader.style.display = 'none';
+
+            } catch (error) {
+                console.error("Error fetching questions: ", error);
+                loader.innerHTML = `<p style="color: red;">Failed to load questions. Please ensure you have created the required Firestore index. Check the browser console for an error message with a link to create it.</p>`;
+            }
+
+            // 2. Render Questions into Swiper slides
+            function renderQuestions() {
+                let questionHTML = '';
+                quizData.forEach((q, index) => {
+                    questionHTML += `
+                        <div class="swiper-slide" data-question-id="${q.id}">
+                            <div class="question-header">
+                                <span class="question-title">Question ${index + 1}</span>
+                                <span class="difficulty-tag">${q.difficulty}</span>
+                            </div>
+                            ${q.questionImageUrl ? `<img src="${q.questionImageUrl}" class="question-image" alt="Question Image">` : ''}
+                            <div class="question-text">${q.questionText}</div>
+                            <div class="options-container">
+                                ${q.options.map((opt, i) => `
+                                    <button class="option-btn" data-option-index="${i}">
+                                        <span class="option-prefix">${String.fromCharCode(65 + i)}.</span>
+                                        <div class="option-content">
+                                            ${opt.text || ''}
+                                            ${opt.imageUrl ? `<img src="${opt.imageUrl}" alt="Option Image">` : ''}
+                                        </div>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                quizContainer.innerHTML = questionHTML;
+            }
+
+            // 3. Initialize Swiper
+            function initializeSwiper() {
+                swiper = new Swiper('.swiper-container', {
+                    // Disable user swiping
+                    allowTouchMove: false, 
+                    on: {
+                        slideChange: function () {
+                            const currentIndex = this.activeIndex;
+                            questionCounterEl.textContent = `Question ${currentIndex + 1} / ${quizData.length}`;
+                            prevBtn.disabled = currentIndex === 0;
+                            
+                            if (currentIndex === quizData.length - 1) {
+                                nextBtn.style.display = 'none';
+                                submitBtn.style.display = 'block';
+                            } else {
+                                nextBtn.style.display = 'block';
+                                submitBtn.style.display = 'none';
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Start Timer
+            function startTimer() {
+                if (timeLimit && timeLimit !== 'unlimited') {
+                    totalTimeInSeconds = parseInt(timeLimit, 10) * 60;
+                    timerInterval = setInterval(() => {
+                        totalTimeInSeconds--;
+                        timeTaken++;
+                        const minutes = Math.floor(totalTimeInSeconds / 60);
+                        const seconds = totalTimeInSeconds % 60;
+                        timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                        if (totalTimeInSeconds <= 0) {
+                            clearInterval(timerInterval);
+                            alert("Time's up!");
+                            submitTest();
+                        }
+                    }, 1000);
+                } else {
+                    timerEl.textContent = "Untimed";
+                    // Still track time taken for untimed tests
+                     timerInterval = setInterval(() => { timeTaken++; }, 1000);
+                }
+            }
+            
+            // 5. Handle User Interaction
+            quizContainer.addEventListener('click', (e) => {
+                const optionBtn = e.target.closest('.option-btn');
+                if (optionBtn) {
+                    const slide = optionBtn.closest('.swiper-slide');
+                    const questionId = slide.dataset.questionId;
+                    const selectedIndex = parseInt(optionBtn.dataset.optionIndex, 10);
+                    
+                    userAnswers[questionId] = selectedIndex;
+
+                    // Update UI
+                    slide.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+                    optionBtn.classList.add('selected');
+
+                    // Auto-swipe to next question after a short delay
+                    setTimeout(() => {
+                        if (swiper.activeIndex < quizData.length - 1) {
+                            swiper.slideNext();
+                        }
+                    }, 300);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => swiper.slideNext());
+            prevBtn.addEventListener('click', () => swiper.slidePrev());
+            submitBtn.addEventListener('click', () => {
+                if(confirm("Are you sure you want to submit the test?")) {
+                    submitTest();
+                }
+            });
+
+            // 6. Submit Test Logic
+            function submitTest() {
+                clearInterval(timerInterval);
+
+                // Prepare results object
+                const results = {
+                    totalQuestions: quizData.length,
+                    attempted: Object.keys(userAnswers).length,
+                    correct: 0,
+                    incorrect: 0,
+                    score: 0,
+                    timeTaken: timeTaken,
+                    userAnswers: userAnswers,
+                    quizData: quizData, // Storing all questions for the review page
+                };
+
+                // Calculate score
+                quizData.forEach(q => {
+                    if (userAnswers.hasOwnProperty(q.id)) {
+                        const userAnswerIndex = userAnswers[q.id];
+                        // Firestore uses 1-based index for correctOptionIndex
+                        if (userAnswerIndex + 1 === q.correctOptionIndex) {
+                            results.correct++;
+                        }
+                    }
+                });
+                results.incorrect = results.attempted - results.correct;
+                results.score = results.correct; // Assuming 1 mark per correct answer
+
+                // Save results to localStorage to be accessed by the next page
+                localStorage.setItem('quizResults', JSON.stringify(results));
+                
+                // Redirect to results page
+                window.location.href = '4.html';
+            }
+        });
+    </script>
+</body>
+              </html>
