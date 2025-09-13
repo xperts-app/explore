@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - ALLEN Digital</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background:#f0f4f9; margin:0; }
+    .container { max-width:400px; margin:10vh auto; background:#fff; padding:30px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+    h2 { margin-top:0; }
+    .input-group { margin-bottom:20px; }
+    label { display:block; font-weight:500; margin-bottom:6px; }
+    input { width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; }
+    button { width:100%; padding:14px; background:#0066ff; color:#fff; border:none; border-radius:8px; font-size:16px; cursor:pointer; }
+    button:disabled { background:#a0cffd; cursor:not-allowed; }
+    .error { color:#dc3545; margin-top:10px; min-height:20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome Back</h2>
+    <p>Sign in with your mobile number</p>
+
+    <div class="input-group">
+      <label for="mobile">Mobile Number</label>
+      <input type="tel" id="mobile" maxlength="10" placeholder="10-digit number">
+    </div>
+
+    <div id="password-container" style="display:none;">
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter password">
+      </div>
+    </div>
+
+    <button id="submit-btn">Continue</button>
+    <p class="error" id="error-msg"></p>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+      authDomain: "xperts-data.firebaseapp.com",
+      projectId: "xperts-data",
+      storageBucket: "xperts-data.firebasestorage.app",
+      messagingSenderId: "934675149024",
+      appId: "1:934675149024:web:23486a5f38f65f103ce085"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const mobileInput = document.getElementById('mobile');
+    const passwordContainer = document.getElementById('password-container');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+
+    let userData = null;
+    let isLoginStep = false;
+
+    submitBtn.addEventListener('click', async () => {
+      errorMsg.textContent = '';
+      submitBtn.disabled = true;
+      const mobile = mobileInput.value.trim();
+      if (!/^\d{10}$/.test(mobile)) {
+        errorMsg.textContent = 'Enter a valid 10-digit number.';
+        submitBtn.disabled = false; return;
+      }
+
+      if (!isLoginStep) {
+        // Step 1: Check if user exists
+        const snapshot = await db.collection('users').where('mobileNumber','==',mobile).get();
+        if (snapshot.empty) {
+          errorMsg.textContent = 'No account found. Please sign up.';
+          submitBtn.disabled = false;
+          return;
+        }
+        snapshot.forEach(doc => userData = { id: doc.id, ...doc.data() });
+        isLoginStep = true;
+        mobileInput.disabled = true;
+        passwordContainer.style.display = 'block';
+        submitBtn.textContent = 'Sign In';
+        submitBtn.disabled = false;
+      } else {
+        // Step 2: Verify password
+        const password = passwordInput.value;
+        if (!password) {
+          errorMsg.textContent = 'Password required.'; 
+          submitBtn.disabled = false; return;
+        }
+        if (userData.password !== password) {
+          errorMsg.textContent = 'Incorrect password.';
+          submitBtn.disabled = false; return;
+        }
+        // Save session
+        localStorage.setItem('loggedInUserId', userData.id);
+        localStorage.setItem('loggedInUserRole', userData.role);
+        localStorage.setItem('loggedInUserClass', userData.class); // <- IMPORTANT
+        window.location.href = "2.html";
+      }
+    });
+  </script>
+</body>
+</html>
