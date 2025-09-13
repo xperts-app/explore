@@ -25,6 +25,10 @@
             color: var(--dark-gray);
             overflow: hidden; /* Prevent scrolling body */
         }
+        /* MODIFICATION: New style to prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
         .container {
             max-width: 500px;
             margin: 0 auto;
@@ -40,12 +44,8 @@
             align-items: center;
             justify-content: space-between;
         }
-        .timer, .question-counter {
-            font-weight: 500;
-        }
-        .bookmark-icon {
-            font-size: 1.5rem; cursor: pointer;
-        }
+        .timer, .question-counter { font-weight: 500; }
+        .bookmark-icon { font-size: 1.5rem; cursor: pointer; }
 
         /* Main content */
         main {
@@ -53,114 +53,84 @@
             padding: 20px;
             overflow-y: auto;
         }
-        .question-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .question-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        .difficulty-tag {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            background-color: var(--medium-orange);
-            color: white;
-        }
-        .question-text {
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        .question-image {
-            max-width: 100%;
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .question-title { font-size: 1.1rem; font-weight: 600; }
+        .difficulty-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; background-color: var(--medium-orange); color: white; }
+        .question-text { line-height: 1.6; margin-bottom: 20px; }
+        
+        /* MODIFICATION: Style for smaller, clickable images */
+        .zoomable-image {
+            max-width: 180px;
+            max-height: 120px;
             border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .option-btn {
-            display: flex;
-            align-items: center;
-            text-align: left;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: white;
+            margin-bottom: 10px;
             cursor: pointer;
-            width: 100%;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease-in-out;
         }
-        .option-btn.selected {
-            border-color: var(--primary-blue);
-            background-color: var(--selected-blue);
+        .zoomable-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .option-prefix {
-            font-weight: 600;
-            margin-right: 10px;
-        }
-        .option-content img { max-width: 100%; border-radius: 5px; }
 
+        .options-container { display: flex; flex-direction: column; gap: 15px; }
+        .option-btn { display: flex; align-items: center; text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: white; cursor: pointer; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem; }
+        .option-btn.selected { border-color: var(--primary-blue); background-color: var(--selected-blue); }
+        .option-prefix { font-weight: 600; margin-right: 10px; }
+        .option-content { /* Container for text and/or image in an option */ }
+        
         /* Loader */
-        #loader {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            z-index: 100;
-        }
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 100; }
 
         /* Swiper.js styles */
-        .swiper-container {
-            width: 100%;
-            height: 100%;
-        }
-        .swiper-slide {
-            box-sizing: border-box;
-            height: auto; /* Important for scrollable content */
-        }
+        .swiper-container { width: 100%; height: 100%; }
+        .swiper-slide { box-sizing: border-box; height: auto; }
         
         /* Footer navigation */
-        .footer {
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        .nav-btn, .submit-btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--primary-blue);
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .prev-btn {
-            background: white;
-            color: var(--primary-blue);
-        }
-        .next-btn {
-            background: var(--primary-blue);
-            color: white;
-            flex-grow: 1;
-        }
-         .submit-btn {
-            background: var(--correct-green);
-            color: white;
-            border-color: var(--correct-green);
-            flex-grow: 1;
+        .footer { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; gap: 10px; }
+        .nav-btn, .submit-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--primary-blue); cursor: pointer; font-weight: 600; }
+        .prev-btn { background: white; color: var(--primary-blue); }
+        .next-btn { background: var(--primary-blue); color: white; flex-grow: 1; }
+        .submit-btn { background: var(--correct-green); color: white; border-color: var(--correct-green); flex-grow: 1; display: none; }
+
+        /* MODIFICATION: New styles for the Image Modal */
+        .modal {
             display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90vh;
+            animation: zoom 0.3s;
+        }
+        @keyframes zoom {
+            from {transform: scale(0.1)}
+            to {transform: scale(1)}
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .close-modal:hover, .close-modal:focus {
+            color: #bbb;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -176,7 +146,6 @@
             <div class="bookmark-icon">&#128278;</div>
         </header>
         
-        <!-- Swiper -->
         <div class="swiper-container">
             <div class="swiper-wrapper" id="quiz-container">
                 <!-- Questions will be injected here by JS -->
@@ -190,6 +159,13 @@
         </div>
     </div>
 
+    <!-- MODIFICATION: New HTML for the Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -197,7 +173,7 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <script>
-        // Firebase Config for Questions
+        // Firebase Config for Questions (no changes here)
         const questionsConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
             authDomain: "question-metabase.firebaseapp.com",
@@ -207,8 +183,6 @@
             appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
             measurementId: "G-6ZP1FPMKSJ"
         };
-
-        // Initialize a named Firebase app for questions
         const questionsApp = firebase.initializeApp(questionsConfig, 'questionsApp');
         const db = questionsApp.firestore();
 
@@ -222,9 +196,14 @@
             const prevBtn = document.getElementById('prev-question');
             const submitBtn = document.getElementById('submit-test');
 
+            // MODIFICATION: Get references to modal elements
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const closeModalBtn = document.querySelector('.close-modal');
+
             let swiper;
             let quizData = [];
-            let userAnswers = {}; // { questionId: selectedIndex }
+            let userAnswers = {}; 
             let timerInterval;
             let totalTimeInSeconds;
             let timeTaken = 0;
@@ -240,7 +219,7 @@
                 return;
             }
 
-            // 1. Fetch Questions
+            // 1. Fetch Questions (no changes here)
             try {
                 const querySnapshot = await db.collection('questions')
                     .where('chapterName', 'in', chapterNames)
@@ -257,7 +236,6 @@
                     quizData.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Shuffle the questions for variety
                 quizData.sort(() => Math.random() - 0.5);
 
                 renderQuestions();
@@ -282,7 +260,8 @@
                                 <span class="question-title">Question ${index + 1}</span>
                                 <span class="difficulty-tag">${q.difficulty}</span>
                             </div>
-                            ${q.questionImageUrl ? `<img src="${q.questionImageUrl}" class="question-image" alt="Question Image">` : ''}
+                            <!-- MODIFICATION: Added 'zoomable-image' class -->
+                            ${q.questionImageUrl ? `<img src="${q.questionImageUrl}" class="zoomable-image" alt="Question Image">` : ''}
                             <div class="question-text">${q.questionText}</div>
                             <div class="options-container">
                                 ${q.options.map((opt, i) => `
@@ -290,7 +269,8 @@
                                         <span class="option-prefix">${String.fromCharCode(65 + i)}.</span>
                                         <div class="option-content">
                                             ${opt.text || ''}
-                                            ${opt.imageUrl ? `<img src="${opt.imageUrl}" alt="Option Image">` : ''}
+                                            <!-- MODIFICATION: Added 'zoomable-image' class -->
+                                            ${opt.imageUrl ? `<img src="${opt.imageUrl}" class="zoomable-image" alt="Option Image">` : ''}
                                         </div>
                                     </button>
                                 `).join('')}
@@ -301,10 +281,9 @@
                 quizContainer.innerHTML = questionHTML;
             }
 
-            // 3. Initialize Swiper
+            // 3. Initialize Swiper (no changes here)
             function initializeSwiper() {
                 swiper = new Swiper('.swiper-container', {
-                    // Disable user swiping
                     allowTouchMove: false, 
                     on: {
                         slideChange: function () {
@@ -324,7 +303,7 @@
                 });
             }
 
-            // 4. Start Timer
+            // 4. Start Timer (no changes here)
             function startTimer() {
                 if (timeLimit && timeLimit !== 'unlimited') {
                     totalTimeInSeconds = parseInt(timeLimit, 10) * 60;
@@ -342,13 +321,13 @@
                     }, 1000);
                 } else {
                     timerEl.textContent = "Untimed";
-                    // Still track time taken for untimed tests
-                     timerInterval = setInterval(() => { timeTaken++; }, 1000);
+                    timerInterval = setInterval(() => { timeTaken++; }, 1000);
                 }
             }
             
             // 5. Handle User Interaction
             quizContainer.addEventListener('click', (e) => {
+                // Handle option button clicks
                 const optionBtn = e.target.closest('.option-btn');
                 if (optionBtn) {
                     const slide = optionBtn.closest('.swiper-slide');
@@ -357,16 +336,35 @@
                     
                     userAnswers[questionId] = selectedIndex;
 
-                    // Update UI
                     slide.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
                     optionBtn.classList.add('selected');
 
-                    // Auto-swipe to next question after a short delay
                     setTimeout(() => {
                         if (swiper.activeIndex < quizData.length - 1) {
                             swiper.slideNext();
                         }
                     }, 300);
+                    return; // Prevent image click from firing if we clicked a button
+                }
+
+                // MODIFICATION: Handle image clicks
+                if (e.target.classList.contains('zoomable-image')) {
+                    modal.style.display = 'flex';
+                    modalImg.src = e.target.src;
+                    document.body.classList.add('modal-open');
+                }
+            });
+
+            // MODIFICATION: Add event listeners to close the modal
+            function hideModal() {
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            }
+            closeModalBtn.addEventListener('click', hideModal);
+            modal.addEventListener('click', (e) => {
+                // If user clicks on the dark background (the modal itself), close it
+                if (e.target === modal) {
+                    hideModal();
                 }
             });
 
@@ -378,11 +376,9 @@
                 }
             });
 
-            // 6. Submit Test Logic
+            // 6. Submit Test Logic (no changes here)
             function submitTest() {
                 clearInterval(timerInterval);
-
-                // Prepare results object
                 const results = {
                     totalQuestions: quizData.length,
                     attempted: Object.keys(userAnswers).length,
@@ -391,29 +387,24 @@
                     score: 0,
                     timeTaken: timeTaken,
                     userAnswers: userAnswers,
-                    quizData: quizData, // Storing all questions for the review page
+                    quizData: quizData,
                 };
 
-                // Calculate score
                 quizData.forEach(q => {
                     if (userAnswers.hasOwnProperty(q.id)) {
                         const userAnswerIndex = userAnswers[q.id];
-                        // Firestore uses 1-based index for correctOptionIndex
                         if (userAnswerIndex + 1 === q.correctOptionIndex) {
                             results.correct++;
                         }
                     }
                 });
                 results.incorrect = results.attempted - results.correct;
-                results.score = results.correct; // Assuming 1 mark per correct answer
+                results.score = results.correct; 
 
-                // Save results to localStorage to be accessed by the next page
                 localStorage.setItem('quizResults', JSON.stringify(results));
-                
-                // Redirect to results page
                 window.location.href = '4.html';
             }
         });
     </script>
 </body>
-              </html>
+</html>
