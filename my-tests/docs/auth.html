@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - ALLEN Digital</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Login</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; background:#f0f4f9; margin:0; }
+    body { font-family: Arial, sans-serif; background:#f0f4f9; margin:0; }
     .container { max-width:400px; margin:10vh auto; background:#fff; padding:30px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
     h2 { margin-top:0; }
     .input-group { margin-bottom:20px; }
@@ -18,7 +17,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="login-box">
     <h2>Welcome Back</h2>
     <p>Sign in with your mobile number</p>
 
@@ -53,6 +52,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // --- AUTO REDIRECT if already logged in ---
+    if (localStorage.getItem('loggedInUserId')) {
+      window.location.href = "2.html";
+    }
+
     const mobileInput = document.getElementById('mobile');
     const passwordContainer = document.getElementById('password-container');
     const passwordInput = document.getElementById('password');
@@ -72,12 +76,10 @@
       }
 
       if (!isLoginStep) {
-        // Step 1: Check if user exists
         const snapshot = await db.collection('users').where('mobileNumber','==',mobile).get();
         if (snapshot.empty) {
           errorMsg.textContent = 'No account found. Please sign up.';
-          submitBtn.disabled = false;
-          return;
+          submitBtn.disabled = false; return;
         }
         snapshot.forEach(doc => userData = { id: doc.id, ...doc.data() });
         isLoginStep = true;
@@ -86,21 +88,16 @@
         submitBtn.textContent = 'Sign In';
         submitBtn.disabled = false;
       } else {
-        // Step 2: Verify password
         const password = passwordInput.value;
-        if (!password) {
-          errorMsg.textContent = 'Password required.'; 
-          submitBtn.disabled = false; return;
-        }
-        if (userData.password !== password) {
-          errorMsg.textContent = 'Incorrect password.';
-          submitBtn.disabled = false; return;
-        }
+        if (!password) { errorMsg.textContent = 'Password required.'; submitBtn.disabled = false; return; }
+        if (userData.password !== password) { errorMsg.textContent = 'Incorrect password.'; submitBtn.disabled = false; return; }
+        
         // Save session
         localStorage.setItem('loggedInUserId', userData.id);
         localStorage.setItem('loggedInUserRole', userData.role);
-        localStorage.setItem('loggedInUserClass', userData.class); // <- IMPORTANT
-        window.location.href = "2.html";
+        localStorage.setItem('loggedInUserClass', userData.class);
+
+        window.location.href = "2.html"; // go to app page
       }
     });
   </script>
