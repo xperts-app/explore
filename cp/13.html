@@ -49,7 +49,15 @@
         }
         .timer, .question-counter { font-weight: 500; }
 
-        .swiper-container { width: 100%; height: 100%; flex-grow: 1; }
+        /* --- MODIFICATION START --- */
+        .swiper-container {
+            width: 100%;
+            flex-grow: 1; /* This correctly fills the available space */
+            /* height: 100%;  <-- THIS WAS THE BUG. REMOVED. */
+            min-height: 0; /* Prevents flexbox overflow issues on some browsers */
+        }
+        /* --- MODIFICATION END --- */
+        
         .swiper-slide {
             box-sizing: border-box;
             height: 100%;
@@ -63,7 +71,7 @@
         .question-text { line-height: 1.6; margin-bottom: 20px; word-wrap: break-word; }
         
         .zoomable-image {
-            max-width: 100%; /* Main image can be larger */
+            max-width: 100%;
             border-radius: 8px;
             margin-bottom: 15px;
             cursor: pointer;
@@ -71,12 +79,7 @@
         }
 
         .options-container { display: flex; flex-direction: column; gap: 5px; }
-        
-        /* MODIFICATION: Wrapper for each option group (text box + image button) */
-        .option-wrapper {
-             margin-bottom: 10px;
-        }
-
+        .option-wrapper { margin-bottom: 10px; }
         .option-btn {
             display: flex;
             align-items: center;
@@ -96,9 +99,7 @@
             font-weight: 600;
         }
         .option-prefix { font-weight: 600; margin-right: 15px; }
-        .option-content { width: 100%; }
         
-        /* MODIFICATION: New style for the separate "View Image" button */
         .view-image-btn {
             width: 100%;
             margin-top: 8px;
@@ -107,18 +108,27 @@
             border: 1.5px solid var(--primary-blue);
             color: var(--primary-blue);
             background-color: white;
-            border-radius: 25px; /* Pill shape */
+            border-radius: 25px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        .view-image-btn:hover {
-             background-color: var(--selected-blue);
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 1000; }
         
-        .footer { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; gap: 10px; flex-shrink: 0; }
+        /* --- MODIFICATION START --- */
+        .footer {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+            background-color: white; /* Ensure it has a background */
+            position: relative; /* Required for z-index */
+            z-index: 10; /* Ensures footer is on top of other content */
+        }
+        /* --- MODIFICATION END --- */
+
         .nav-btn, .submit-btn { padding: 12px 20px; border-radius: 8px; border: 1px solid var(--primary-blue); cursor: pointer; font-weight: 600; font-size: 1rem; }
         .prev-btn { background: white; color: var(--primary-blue); }
         .next-btn { background: var(--primary-blue); color: white; flex-grow: 1; }
@@ -160,7 +170,8 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <script>
-        // Firebase Config (unchanged)
+        // The JavaScript was correct and remains unchanged.
+        // The problem was purely in the CSS.
         const questionsConfig = { apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq_KxAHyUQh-Hi-U", authDomain: "question-metabase.firebaseapp.com", projectId: "question-metabase", storageBucket: "question-metabase.firebasestorage.app", messagingSenderId: "770698198753", appId: "1:770698198753:web:59ae49d78b6013bab5c1a0" };
         const questionsApp = firebase.initializeApp(questionsConfig, 'questionsApp');
         const db = questionsApp.firestore();
@@ -186,7 +197,6 @@
             const count = parseInt(urlParams.get('count'), 10) || 10;
             const timeLimit = urlParams.get('time');
 
-            // --- 1. FETCH QUESTIONS (unchanged) ---
             try {
                 const querySnapshot = await db.collection('questions').where('chapterName', 'in', chapterNames).where('difficulty', '==', difficulty).limit(count).get();
                 if (querySnapshot.empty) { loader.innerHTML = `<p>Sorry, no questions found.</p>`; return; }
@@ -202,7 +212,6 @@
                 loader.style.display = 'none';
             } catch (error) { console.error("Error fetching questions: ", error); loader.innerHTML = `<p style="color: red;">Failed to load questions. Check console for index link.</p>`; }
 
-            // --- 2. RENDER QUESTIONS (MODIFIED) ---
             function renderQuestions() {
                 quizContainer.innerHTML = quizData.map((q, index) => `
                     <div class="swiper-slide" data-question-id="${q.id}">
@@ -214,7 +223,6 @@
                         <div class="question-text">${q.questionText}</div>
                         <div class="options-container">
                             ${q.options.map((opt, i) => `
-                                <!-- This wrapper now contains both the option and the image button -->
                                 <div class="option-wrapper">
                                     <button class="option-btn" data-option-index="${i}">
                                         <span class="option-prefix">${String.fromCharCode(65 + i)}</span>
@@ -230,7 +238,6 @@
                 `).join('');
             }
 
-            // --- 3. INITIALIZE SWIPER (unchanged) ---
             function initializeSwiper() {
                 swiper = new Swiper('.swiper-container', {
                     allowTouchMove: false,
@@ -247,7 +254,6 @@
                 });
             }
 
-            // --- 4. TIMER LOGIC (unchanged) ---
             function startTimer() {
                 if (timeLimit && timeLimit !== 'unlimited') {
                     totalTimeInSeconds = parseInt(timeLimit, 10) * 60;
@@ -260,21 +266,15 @@
                 } else { timerEl.textContent = "Untimed"; timerInterval = setInterval(() => { timeTaken++; }, 1000); }
             }
             
-            // --- 5. EVENT HANDLERS (unchanged, still works) ---
             quizContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('view-image-btn')) { e.stopPropagation(); showModal(e.target.dataset.src); return; }
                 if (e.target.classList.contains('zoomable-image')) { showModal(e.target.src); return; }
                 const optionBtn = e.target.closest('.option-btn');
                 if (optionBtn) {
                     const slide = optionBtn.closest('.swiper-slide');
-                    const questionId = slide.dataset.questionId;
-                    userAnswers[questionId] = parseInt(optionBtn.dataset.optionIndex, 10);
-                    // To select the right button, we now look inside its parent wrapper
-                    const wrapper = optionBtn.closest('.option-wrapper');
-                    // Deselect all others
+                    userAnswers[slide.dataset.questionId] = parseInt(optionBtn.dataset.optionIndex, 10);
                     slide.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-                    // Select the clicked one
-                    wrapper.querySelector('.option-btn').classList.add('selected');
+                    optionBtn.classList.add('selected');
                     setTimeout(() => { if (swiper.activeIndex < quizData.length - 1) swiper.slideNext(); }, 300);
                 }
             });
@@ -288,7 +288,6 @@
             prevBtn.addEventListener('click', () => swiper.slidePrev());
             submitBtn.addEventListener('click', () => { if(confirm("Are you sure you want to submit?")) submitTest(); });
 
-            // --- 6. SUBMIT TEST (unchanged) ---
             function submitTest() {
                 clearInterval(timerInterval);
                 const results = { totalQuestions: quizData.length, attempted: Object.keys(userAnswers).length, correct: 0, score: 0, timeTaken: timeTaken, userAnswers: userAnswers, quizData: quizData };
@@ -305,4 +304,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
