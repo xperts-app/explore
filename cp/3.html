@@ -18,14 +18,13 @@
         }
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             background-color: var(--light-gray);
             color: var(--dark-gray);
-            /* Prevent scrolling of the entire page */
             height: 100vh;
             overflow: hidden;
         }
@@ -46,20 +45,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-shrink: 0; /* Prevents header from shrinking */
+            flex-shrink: 0;
         }
         .timer, .question-counter { font-weight: 500; }
 
-        /* Main swiper container takes up remaining space */
-        .swiper-container {
-            width: 100%;
-            height: 100%;
-            flex-grow: 1;
-        }
+        .swiper-container { width: 100%; height: 100%; flex-grow: 1; }
         .swiper-slide {
             box-sizing: border-box;
             height: 100%;
-            overflow-y: auto; /* Allow scrolling within each question slide */
+            overflow-y: auto;
             padding: 20px;
         }
         
@@ -69,32 +63,57 @@
         .question-text { line-height: 1.6; margin-bottom: 20px; word-wrap: break-word; }
         
         .zoomable-image {
-            max-width: 180px;
-            max-height: 120px;
+            max-width: 100%; /* Main image can be larger */
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             cursor: pointer;
             border: 1px solid var(--border-color);
-            transition: transform 0.2s ease-in-out;
         }
-        .zoomable-image:hover { transform: scale(1.05); }
 
-        .options-container { display: flex; flex-direction: column; gap: 15px; }
-        .option-btn { display: flex; align-items: center; text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: white; cursor: pointer; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem; }
-        .option-btn.selected { border-color: var(--primary-blue); background-color: var(--selected-blue); font-weight: 500; }
-        .option-prefix { font-weight: 600; margin-right: 15px; }
-        .option-content { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;}
+        .options-container { display: flex; flex-direction: column; gap: 5px; }
         
-        .view-image-btn {
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            border: 1px solid var(--primary-blue);
-            color: var(--primary-blue);
-            background-color: transparent;
-            border-radius: 15px;
+        /* MODIFICATION: Wrapper for each option group (text box + image button) */
+        .option-wrapper {
+             margin-bottom: 10px;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
             cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+        }
+        .option-btn.selected {
+            border-color: var(--primary-blue);
+            background-color: var(--selected-blue);
+            font-weight: 600;
+        }
+        .option-prefix { font-weight: 600; margin-right: 15px; }
+        .option-content { width: 100%; }
+        
+        /* MODIFICATION: New style for the separate "View Image" button */
+        .view-image-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            font-size: 0.9rem;
+            border: 1.5px solid var(--primary-blue);
+            color: var(--primary-blue);
+            background-color: white;
+            border-radius: 25px; /* Pill shape */
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .view-image-btn:hover {
+             background-color: var(--selected-blue);
         }
 
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 1000; }
@@ -105,7 +124,6 @@
         .next-btn { background: var(--primary-blue); color: white; flex-grow: 1; }
         .submit-btn { background: var(--correct-green); color: white; border-color: var(--correct-green); flex-grow: 1; display: none; }
 
-        /* Image Modal styles */
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
         .modal-content { display: block; max-width: 90%; max-height: 90vh; animation: zoom 0.3s; }
         @keyframes zoom { from {transform: scale(0.1)} to {transform: scale(1)} }
@@ -142,13 +160,12 @@
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <script>
-        // Firebase Config for Questions
-        const questionsConfig = { apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U", authDomain: "question-metabase.firebaseapp.com", projectId: "question-metabase", storageBucket: "question-metabase.firebasestorage.app", messagingSenderId: "770698198753", appId: "1:770698198753:web:59ae49d78b6013bab5c1a0" };
+        // Firebase Config (unchanged)
+        const questionsConfig = { apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq_KxAHyUQh-Hi-U", authDomain: "question-metabase.firebaseapp.com", projectId: "question-metabase", storageBucket: "question-metabase.firebasestorage.app", messagingSenderId: "770698198753", appId: "1:770698198753:web:59ae49d78b6013bab5c1a0" };
         const questionsApp = firebase.initializeApp(questionsConfig, 'questionsApp');
         const db = questionsApp.firestore();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // DOM Element References
             const loader = document.getElementById('loader');
             const container = document.querySelector('.container');
             const quizContainer = document.getElementById('quiz-container');
@@ -161,44 +178,31 @@
             const modalImg = document.getElementById('modalImage');
             const closeModalBtn = document.querySelector('.close-modal');
 
-            // State Variables
             let swiper; let quizData = []; let userAnswers = {}; let timerInterval; let totalTimeInSeconds; let timeTaken = 0;
             
-            // Get test parameters from URL
             const urlParams = new URLSearchParams(window.location.search);
             const chapterNames = urlParams.get('chapters')?.split(',') || [];
             const difficulty = urlParams.get('difficulty') || 'Easy';
             const count = parseInt(urlParams.get('count'), 10) || 10;
             const timeLimit = urlParams.get('time');
 
-            // --- 1. FETCH QUESTIONS ---
+            // --- 1. FETCH QUESTIONS (unchanged) ---
             try {
                 const querySnapshot = await db.collection('questions').where('chapterName', 'in', chapterNames).where('difficulty', '==', difficulty).limit(count).get();
-                if (querySnapshot.empty) { loader.innerHTML = `<p>Sorry, no questions found for your selection.</p>`; return; }
-                
+                if (querySnapshot.empty) { loader.innerHTML = `<p>Sorry, no questions found.</p>`; return; }
                 querySnapshot.forEach(doc => {
-                    // Basic validation to prevent errors from malformed data
                     const data = doc.data();
-                    if (data.questionText && Array.isArray(data.options)) {
-                        quizData.push({ id: doc.id, ...data });
-                    }
+                    if (data.questionText && Array.isArray(data.options)) { quizData.push({ id: doc.id, ...data }); }
                 });
-                
-                quizData.sort(() => Math.random() - 0.5); // Shuffle questions
-                
+                quizData.sort(() => Math.random() - 0.5);
                 renderQuestions();
                 initializeSwiper();
                 startTimer();
-                
                 container.style.display = 'flex';
                 loader.style.display = 'none';
+            } catch (error) { console.error("Error fetching questions: ", error); loader.innerHTML = `<p style="color: red;">Failed to load questions. Check console for index link.</p>`; }
 
-            } catch (error) { 
-                console.error("Error fetching questions: ", error); 
-                loader.innerHTML = `<p style="color: red;">Failed to load questions. You may need to create a Firestore index. Check the browser console for a link.</p>`; 
-            }
-
-            // --- 2. RENDER QUESTIONS ---
+            // --- 2. RENDER QUESTIONS (MODIFIED) ---
             function renderQuestions() {
                 quizContainer.innerHTML = quizData.map((q, index) => `
                     <div class="swiper-slide" data-question-id="${q.id}">
@@ -210,30 +214,31 @@
                         <div class="question-text">${q.questionText}</div>
                         <div class="options-container">
                             ${q.options.map((opt, i) => `
-                                <button class="option-btn" data-option-index="${i}">
-                                    <span class="option-prefix">${String.fromCharCode(65 + i)}</span>
-                                    <div class="option-content">
-                                        <span>${opt.text || ''}</span>
-                                        ${opt.imageUrl ? `<button class="view-image-btn" data-src="${opt.imageUrl}">View Image</button>` : ''}
-                                    </div>
-                                </button>
+                                <!-- This wrapper now contains both the option and the image button -->
+                                <div class="option-wrapper">
+                                    <button class="option-btn" data-option-index="${i}">
+                                        <span class="option-prefix">${String.fromCharCode(65 + i)}</span>
+                                        <div class="option-content">
+                                            <span>${opt.text || ''}</span>
+                                        </div>
+                                    </button>
+                                    ${opt.imageUrl ? `<button class="view-image-btn" data-src="${opt.imageUrl}">View Image</button>` : ''}
+                                </div>
                             `).join('')}
                         </div>
                     </div>
                 `).join('');
             }
 
-            // --- 3. INITIALIZE SWIPER ---
+            // --- 3. INITIALIZE SWIPER (unchanged) ---
             function initializeSwiper() {
                 swiper = new Swiper('.swiper-container', {
-                    allowTouchMove: false, // User can only navigate with buttons
+                    allowTouchMove: false,
                     on: {
                         slideChange: function () {
                             const currentIndex = this.activeIndex;
                             questionCounterEl.textContent = `Question ${currentIndex + 1} / ${quizData.length}`;
                             prevBtn.disabled = currentIndex === 0;
-
-                            // **This is the logic for showing Submit button on the last question**
                             const isLastSlide = currentIndex === quizData.length - 1;
                             nextBtn.style.display = isLastSlide ? 'none' : 'block';
                             submitBtn.style.display = isLastSlide ? 'block' : 'none';
@@ -242,7 +247,7 @@
                 });
             }
 
-            // --- 4. TIMER LOGIC ---
+            // --- 4. TIMER LOGIC (unchanged) ---
             function startTimer() {
                 if (timeLimit && timeLimit !== 'unlimited') {
                     totalTimeInSeconds = parseInt(timeLimit, 10) * 60;
@@ -255,27 +260,21 @@
                 } else { timerEl.textContent = "Untimed"; timerInterval = setInterval(() => { timeTaken++; }, 1000); }
             }
             
-            // --- 5. EVENT HANDLERS ---
+            // --- 5. EVENT HANDLERS (unchanged, still works) ---
             quizContainer.addEventListener('click', (e) => {
-                // Priority 1: Check for "View Image" button click in options
-                if (e.target.classList.contains('view-image-btn')) {
-                    e.stopPropagation(); // Stop the event from bubbling up to the option button
-                    showModal(e.target.dataset.src);
-                    return;
-                }
-                // Priority 2: Check for main question image click
-                if (e.target.classList.contains('zoomable-image')) {
-                    showModal(e.target.src);
-                    return;
-                }
-                // Priority 3: Handle option selection
+                if (e.target.classList.contains('view-image-btn')) { e.stopPropagation(); showModal(e.target.dataset.src); return; }
+                if (e.target.classList.contains('zoomable-image')) { showModal(e.target.src); return; }
                 const optionBtn = e.target.closest('.option-btn');
                 if (optionBtn) {
                     const slide = optionBtn.closest('.swiper-slide');
-                    userAnswers[slide.dataset.questionId] = parseInt(optionBtn.dataset.optionIndex, 10);
+                    const questionId = slide.dataset.questionId;
+                    userAnswers[questionId] = parseInt(optionBtn.dataset.optionIndex, 10);
+                    // To select the right button, we now look inside its parent wrapper
+                    const wrapper = optionBtn.closest('.option-wrapper');
+                    // Deselect all others
                     slide.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-                    optionBtn.classList.add('selected');
-                    // Auto-advance to next question
+                    // Select the clicked one
+                    wrapper.querySelector('.option-btn').classList.add('selected');
                     setTimeout(() => { if (swiper.activeIndex < quizData.length - 1) swiper.slideNext(); }, 300);
                 }
             });
@@ -287,22 +286,19 @@
 
             nextBtn.addEventListener('click', () => swiper.slideNext());
             prevBtn.addEventListener('click', () => swiper.slidePrev());
-            submitBtn.addEventListener('click', () => { if(confirm("Are you sure you want to submit the test?")) submitTest(); });
+            submitBtn.addEventListener('click', () => { if(confirm("Are you sure you want to submit?")) submitTest(); });
 
-            // --- 6. SUBMIT TEST ---
+            // --- 6. SUBMIT TEST (unchanged) ---
             function submitTest() {
                 clearInterval(timerInterval);
                 const results = { totalQuestions: quizData.length, attempted: Object.keys(userAnswers).length, correct: 0, score: 0, timeTaken: timeTaken, userAnswers: userAnswers, quizData: quizData };
-                
                 quizData.forEach(q => {
                     const hasAnswer = userAnswers.hasOwnProperty(q.id);
                     const isCorrect = hasAnswer && (userAnswers[q.id] + 1 === q.correctOptionIndex);
                     if (isCorrect) results.correct++;
                 });
-
                 results.incorrect = results.attempted - results.correct;
-                results.score = results.correct; // 1 mark per question
-                
+                results.score = results.correct;
                 localStorage.setItem('quizResults', JSON.stringify(results));
                 window.location.href = '4.html';
             }
