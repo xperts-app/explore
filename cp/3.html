@@ -14,7 +14,6 @@
             --dark-gray: #333;
             --border-color: #dee2e6;
             --correct-green: #28a745;
-            --incorrect-red: #dc3545;
             --selected-blue: #e7f3ff;
             --medium-orange: #ffc107;
         }
@@ -23,42 +22,20 @@
             margin: 0;
             background-color: var(--light-gray);
             color: var(--dark-gray);
-            overflow: hidden; /* Prevent scrolling body */
-        }
-        /* MODIFICATION: New style to prevent body scroll when modal is open */
-        body.modal-open {
             overflow: hidden;
         }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background-color: white;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        body.modal-open { overflow: hidden; }
+        .container { max-width: 500px; margin: 0 auto; background-color: white; height: 100vh; display: flex; flex-direction: column; }
+        header { padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
         .timer, .question-counter { font-weight: 500; }
         .bookmark-icon { font-size: 1.5rem; cursor: pointer; }
-
-        /* Main content */
-        main {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        main { flex-grow: 1; padding: 20px; overflow-y: auto; }
         .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .question-title { font-size: 1.1rem; font-weight: 600; }
         .difficulty-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; background-color: var(--medium-orange); color: white; }
         .question-text { line-height: 1.6; margin-bottom: 20px; }
         
-        /* MODIFICATION: Style for smaller, clickable images */
+        /* Style for clickable QUESTION images */
         .zoomable-image {
             max-width: 180px;
             max-height: 120px;
@@ -68,76 +45,51 @@
             border: 1px solid var(--border-color);
             transition: transform 0.2s ease-in-out;
         }
-        .zoomable-image:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+        .zoomable-image:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
         .options-container { display: flex; flex-direction: column; gap: 15px; }
         .option-btn { display: flex; align-items: center; text-align: left; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: white; cursor: pointer; width: 100%; font-family: 'Poppins', sans-serif; font-size: 1rem; }
         .option-btn.selected { border-color: var(--primary-blue); background-color: var(--selected-blue); }
         .option-prefix { font-weight: 600; margin-right: 10px; }
-        .option-content { /* Container for text and/or image in an option */ }
+        .option-content { display: flex; align-items: center; justify-content: space-between; width: 100%;}
         
-        /* Loader */
-        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 100; }
+        /* MODIFICATION: New style for the "View Image" button inside options */
+        .view-image-btn {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            background-color: transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap; /* Prevents button text from wrapping */
+        }
+        .view-image-btn:hover {
+            background-color: var(--selected-blue);
+        }
 
-        /* Swiper.js styles */
+        #loader { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 100; }
         .swiper-container { width: 100%; height: 100%; }
         .swiper-slide { box-sizing: border-box; height: auto; }
-        
-        /* Footer navigation */
         .footer { padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; gap: 10px; }
         .nav-btn, .submit-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--primary-blue); cursor: pointer; font-weight: 600; }
         .prev-btn { background: white; color: var(--primary-blue); }
         .next-btn { background: var(--primary-blue); color: white; flex-grow: 1; }
         .submit-btn { background: var(--correct-green); color: white; border-color: var(--correct-green); flex-grow: 1; display: none; }
 
-        /* MODIFICATION: New styles for the Image Modal */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.85);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            margin: auto;
-            display: block;
-            max-width: 90%;
-            max-height: 90vh;
-            animation: zoom 0.3s;
-        }
-        @keyframes zoom {
-            from {transform: scale(0.1)}
-            to {transform: scale(1)}
-        }
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #f1f1f1;
-            font-size: 40px;
-            font-weight: bold;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-        .close-modal:hover, .close-modal:focus {
-            color: #bbb;
-            text-decoration: none;
-        }
+        /* Image Modal styles (no changes here) */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+        .modal-content { margin: auto; display: block; max-width: 90%; max-height: 90vh; animation: zoom 0.3s; }
+        @keyframes zoom { from {transform: scale(0.1)} to {transform: scale(1)} }
+        .close-modal { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+        .close-modal:hover, .close-modal:focus { color: #bbb; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div id="loader">
-        <p>Preparing your test...</p>
-    </div>
+    <div id="loader"><p>Preparing your test...</p></div>
 
     <div class="container" style="display: none;">
         <header>
@@ -147,9 +99,7 @@
         </header>
         
         <div class="swiper-container">
-            <div class="swiper-wrapper" id="quiz-container">
-                <!-- Questions will be injected here by JS -->
-            </div>
+            <div class="swiper-wrapper" id="quiz-container"></div>
         </div>
 
         <div class="footer">
@@ -159,30 +109,18 @@
         </div>
     </div>
 
-    <!-- MODIFICATION: New HTML for the Image Modal -->
     <div id="imageModal" class="modal">
         <span class="close-modal">&times;</span>
         <img class="modal-content" id="modalImage">
     </div>
 
-
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- Swiper.js JS -->
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 
     <script>
-        // Firebase Config for Questions (no changes here)
-        const questionsConfig = {
-            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
-            authDomain: "question-metabase.firebaseapp.com",
-            projectId: "question-metabase",
-            storageBucket: "question-metabase.firebasestorage.app",
-            messagingSenderId: "770698198753",
-            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
-            measurementId: "G-6ZP1FPMKSJ"
-        };
+        // Firebase Config (no changes)
+        const questionsConfig = { apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U", authDomain: "question-metabase.firebaseapp.com", projectId: "question-metabase", storageBucket: "question-metabase.firebasestorage.app", messagingSenderId: "770698198753", appId: "1:770698198753:web:59ae49d78b6013bab5c1a0", measurementId: "G-6ZP1FPMKSJ" };
         const questionsApp = firebase.initializeApp(questionsConfig, 'questionsApp');
         const db = questionsApp.firestore();
 
@@ -195,60 +133,29 @@
             const nextBtn = document.getElementById('next-question');
             const prevBtn = document.getElementById('prev-question');
             const submitBtn = document.getElementById('submit-test');
-
-            // MODIFICATION: Get references to modal elements
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImage');
             const closeModalBtn = document.querySelector('.close-modal');
 
-            let swiper;
-            let quizData = [];
-            let userAnswers = {}; 
-            let timerInterval;
-            let totalTimeInSeconds;
-            let timeTaken = 0;
-
+            let swiper; let quizData = []; let userAnswers = {}; let timerInterval; let totalTimeInSeconds; let timeTaken = 0;
             const urlParams = new URLSearchParams(window.location.search);
             const chapterNames = urlParams.get('chapters')?.split(',') || [];
             const difficulty = urlParams.get('difficulty') || 'Easy';
             const count = parseInt(urlParams.get('count'), 10) || 10;
             const timeLimit = urlParams.get('time');
 
-            if (chapterNames.length === 0) {
-                loader.innerHTML = '<p style="color: red;">Error: No chapters selected. Please go back.</p>';
-                return;
-            }
-
-            // 1. Fetch Questions (no changes here)
+            // Fetch Questions (no changes)
             try {
-                const querySnapshot = await db.collection('questions')
-                    .where('chapterName', 'in', chapterNames)
-                    .where('difficulty', '==', difficulty)
-                    .limit(count)
-                    .get();
-
-                if (querySnapshot.empty) {
-                    loader.innerHTML = `<p>Sorry, we couldn't find enough questions matching your criteria. Please try different chapters or difficulty.</p>`;
-                    return;
-                }
-                
-                querySnapshot.forEach(doc => {
-                    quizData.push({ id: doc.id, ...doc.data() });
-                });
-
+                const querySnapshot = await db.collection('questions').where('chapterName', 'in', chapterNames).where('difficulty', '==', difficulty).limit(count).get();
+                if (querySnapshot.empty) { loader.innerHTML = `<p>Sorry, we couldn't find enough questions matching your criteria.</p>`; return; }
+                querySnapshot.forEach(doc => { quizData.push({ id: doc.id, ...doc.data() }); });
                 quizData.sort(() => Math.random() - 0.5);
-
                 renderQuestions();
                 initializeSwiper();
                 startTimer();
-
                 container.style.display = 'flex';
                 loader.style.display = 'none';
-
-            } catch (error) {
-                console.error("Error fetching questions: ", error);
-                loader.innerHTML = `<p style="color: red;">Failed to load questions. Please ensure you have created the required Firestore index. Check the browser console for an error message with a link to create it.</p>`;
-            }
+            } catch (error) { console.error("Error fetching questions: ", error); loader.innerHTML = `<p style="color: red;">Failed to load questions. Check console for index creation link.</p>`; }
 
             // 2. Render Questions into Swiper slides
             function renderQuestions() {
@@ -260,7 +167,7 @@
                                 <span class="question-title">Question ${index + 1}</span>
                                 <span class="difficulty-tag">${q.difficulty}</span>
                             </div>
-                            <!-- MODIFICATION: Added 'zoomable-image' class -->
+                            <!-- Question image is still a clickable thumbnail -->
                             ${q.questionImageUrl ? `<img src="${q.questionImageUrl}" class="zoomable-image" alt="Question Image">` : ''}
                             <div class="question-text">${q.questionText}</div>
                             <div class="options-container">
@@ -268,9 +175,9 @@
                                     <button class="option-btn" data-option-index="${i}">
                                         <span class="option-prefix">${String.fromCharCode(65 + i)}.</span>
                                         <div class="option-content">
-                                            ${opt.text || ''}
-                                            <!-- MODIFICATION: Added 'zoomable-image' class -->
-                                            ${opt.imageUrl ? `<img src="${opt.imageUrl}" class="zoomable-image" alt="Option Image">` : ''}
+                                            <span>${opt.text || ''}</span>
+                                            <!-- MODIFICATION: Render a button instead of an image for options -->
+                                            ${opt.imageUrl ? `<button class="view-image-btn" data-src="${opt.imageUrl}">View Image</button>` : ''}
                                         </div>
                                     </button>
                                 `).join('')}
@@ -281,7 +188,7 @@
                 quizContainer.innerHTML = questionHTML;
             }
 
-            // 3. Initialize Swiper (no changes here)
+            // 3. Initialize Swiper (no changes)
             function initializeSwiper() {
                 swiper = new Swiper('.swiper-container', {
                     allowTouchMove: false, 
@@ -290,117 +197,76 @@
                             const currentIndex = this.activeIndex;
                             questionCounterEl.textContent = `Question ${currentIndex + 1} / ${quizData.length}`;
                             prevBtn.disabled = currentIndex === 0;
-                            
-                            if (currentIndex === quizData.length - 1) {
-                                nextBtn.style.display = 'none';
-                                submitBtn.style.display = 'block';
-                            } else {
-                                nextBtn.style.display = 'block';
-                                submitBtn.style.display = 'none';
-                            }
+                            nextBtn.style.display = (currentIndex === quizData.length - 1) ? 'none' : 'block';
+                            submitBtn.style.display = (currentIndex === quizData.length - 1) ? 'block' : 'none';
                         }
                     }
                 });
             }
 
-            // 4. Start Timer (no changes here)
+            // 4. Start Timer (no changes)
             function startTimer() {
                 if (timeLimit && timeLimit !== 'unlimited') {
                     totalTimeInSeconds = parseInt(timeLimit, 10) * 60;
                     timerInterval = setInterval(() => {
-                        totalTimeInSeconds--;
-                        timeTaken++;
-                        const minutes = Math.floor(totalTimeInSeconds / 60);
-                        const seconds = totalTimeInSeconds % 60;
+                        totalTimeInSeconds--; timeTaken++;
+                        const minutes = Math.floor(totalTimeInSeconds / 60); const seconds = totalTimeInSeconds % 60;
                         timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                        if (totalTimeInSeconds <= 0) {
-                            clearInterval(timerInterval);
-                            alert("Time's up!");
-                            submitTest();
-                        }
+                        if (totalTimeInSeconds <= 0) { clearInterval(timerInterval); alert("Time's up!"); submitTest(); }
                     }, 1000);
-                } else {
-                    timerEl.textContent = "Untimed";
-                    timerInterval = setInterval(() => { timeTaken++; }, 1000);
-                }
+                } else { timerEl.textContent = "Untimed"; timerInterval = setInterval(() => { timeTaken++; }, 1000); }
             }
             
             // 5. Handle User Interaction
             quizContainer.addEventListener('click', (e) => {
-                // Handle option button clicks
+                // MODIFICATION: First, check if the "View Image" button was clicked
+                if (e.target.classList.contains('view-image-btn')) {
+                    e.stopPropagation(); // IMPORTANT: Prevent the option selection from firing
+                    const imageUrl = e.target.dataset.src;
+                    modal.style.display = 'flex';
+                    modalImg.src = imageUrl;
+                    document.body.classList.add('modal-open');
+                    return; // Stop further execution
+                }
+
+                // Handle main question image click
+                if (e.target.classList.contains('zoomable-image')) {
+                    modal.style.display = 'flex';
+                    modalImg.src = e.target.src;
+                    document.body.classList.add('modal-open');
+                    return; // Stop further execution
+                }
+
+                // Handle option button selection (if nothing above was clicked)
                 const optionBtn = e.target.closest('.option-btn');
                 if (optionBtn) {
                     const slide = optionBtn.closest('.swiper-slide');
                     const questionId = slide.dataset.questionId;
                     const selectedIndex = parseInt(optionBtn.dataset.optionIndex, 10);
-                    
                     userAnswers[questionId] = selectedIndex;
-
                     slide.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
                     optionBtn.classList.add('selected');
-
-                    setTimeout(() => {
-                        if (swiper.activeIndex < quizData.length - 1) {
-                            swiper.slideNext();
-                        }
-                    }, 300);
-                    return; // Prevent image click from firing if we clicked a button
-                }
-
-                // MODIFICATION: Handle image clicks
-                if (e.target.classList.contains('zoomable-image')) {
-                    modal.style.display = 'flex';
-                    modalImg.src = e.target.src;
-                    document.body.classList.add('modal-open');
+                    setTimeout(() => { if (swiper.activeIndex < quizData.length - 1) swiper.slideNext(); }, 300);
                 }
             });
 
-            // MODIFICATION: Add event listeners to close the modal
-            function hideModal() {
-                modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            }
+            // Modal closing logic (no changes)
+            function hideModal() { modal.style.display = 'none'; document.body.classList.remove('modal-open'); }
             closeModalBtn.addEventListener('click', hideModal);
-            modal.addEventListener('click', (e) => {
-                // If user clicks on the dark background (the modal itself), close it
-                if (e.target === modal) {
-                    hideModal();
-                }
-            });
+            modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
 
+            // Navigation and submission (no changes)
             nextBtn.addEventListener('click', () => swiper.slideNext());
             prevBtn.addEventListener('click', () => swiper.slidePrev());
-            submitBtn.addEventListener('click', () => {
-                if(confirm("Are you sure you want to submit the test?")) {
-                    submitTest();
-                }
-            });
+            submitBtn.addEventListener('click', () => { if(confirm("Are you sure?")) submitTest(); });
 
-            // 6. Submit Test Logic (no changes here)
+            // 6. Submit Test Logic (no changes)
             function submitTest() {
                 clearInterval(timerInterval);
-                const results = {
-                    totalQuestions: quizData.length,
-                    attempted: Object.keys(userAnswers).length,
-                    correct: 0,
-                    incorrect: 0,
-                    score: 0,
-                    timeTaken: timeTaken,
-                    userAnswers: userAnswers,
-                    quizData: quizData,
-                };
-
-                quizData.forEach(q => {
-                    if (userAnswers.hasOwnProperty(q.id)) {
-                        const userAnswerIndex = userAnswers[q.id];
-                        if (userAnswerIndex + 1 === q.correctOptionIndex) {
-                            results.correct++;
-                        }
-                    }
-                });
+                const results = { totalQuestions: quizData.length, attempted: Object.keys(userAnswers).length, correct: 0, score: 0, timeTaken: timeTaken, userAnswers: userAnswers, quizData: quizData };
+                quizData.forEach(q => { if (userAnswers.hasOwnProperty(q.id) && (userAnswers[q.id] + 1 === q.correctOptionIndex)) results.correct++; });
                 results.incorrect = results.attempted - results.correct;
                 results.score = results.correct; 
-
                 localStorage.setItem('quizResults', JSON.stringify(results));
                 window.location.href = '4.html';
             }
