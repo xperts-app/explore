@@ -73,7 +73,6 @@
     <div class="login-container">
         <h2>Student Login</h2>
         <form id="loginForm">
-            <!-- UPDATED: Changed from email to mobileNumber -->
             <div class="input-group">
                 <label for="mobileNumber">Mobile Number</label>
                 <input type="tel" id="mobileNumber" required>
@@ -87,9 +86,8 @@
         </form>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs - NOTE: firebase-auth.js is REMOVED -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
@@ -106,10 +104,9 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Check for persistent student login (no changes here)
+        // Check for persistent student login
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('user'));
             if (user && user.role === 'Student') {
@@ -123,7 +120,6 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // UPDATED: Get mobileNumber instead of email from the form
             const mobileNumber = document.getElementById('mobileNumber').value;
             const password = document.getElementById('password').value;
             errorMessage.style.display = 'none';
@@ -132,49 +128,34 @@
                 // Step 1: Find the user in Firestore by their mobile number
                 const userQuery = await db.collection('users')
                     .where('mobileNumber', '==', mobileNumber)
+                    .where('role', '==', 'Student') // Ensure we only log in students
                     .limit(1)
                     .get();
 
                 if (userQuery.empty) {
-                    throw new Error("No account found with this mobile number.");
+                    throw new Error("No student account found with this mobile number.");
                 }
 
                 const userDoc = userQuery.docs[0];
                 const userData = userDoc.data();
-                const userEmail = userData.email;
 
-                if (!userEmail) {
-                    throw new Error("Account is misconfigured. Please contact admin.");
-                }
-
-                // Step 2: Use the retrieved email to sign in with Firebase Auth
-                const userCredential = await auth.signInWithEmailAndPassword(userEmail, password);
-                const user = userCredential.user;
-
-                // Step 3: Verify role and save session data
-                if (userData.role !== 'Student') {
-                    await auth.signOut();
-                    throw new Error("This login is for students only.");
+                // Step 2: Compare the provided password with the one in Firestore
+                if (userData.password !== password) {
+                    throw new Error("Incorrect password. Please try again.");
                 }
                 
-                // Add important IDs to the user data object
-                userData.id = userDoc.id; // Firestore Document ID
-                userData.uid = user.uid;  // Auth User ID
+                // Step 3: SUCCESS! Prepare user data for session storage
+                // Add the Firestore document ID. This is crucial for other pages.
+                userData.id = userDoc.id;
 
-                // Store user data for persistent session
+                // Store user data in localStorage for a persistent session
                 localStorage.setItem('user', JSON.stringify(userData));
 
                 // Redirect student to their test list
                 window.location.href = '2.html';
 
             } catch (error) {
-                // This will catch errors from both Firestore (e.g., "No account")
-                // and Firebase Auth (e.g., "wrong-password")
-                if (error.code === 'auth/wrong-password') {
-                    errorMessage.textContent = 'Incorrect password. Please try again.';
-                } else {
-                    errorMessage.textContent = error.message;
-                }
+                errorMessage.textContent = error.message;
                 errorMessage.style.display = 'block';
             }
         });
