@@ -6,136 +6,203 @@
     <title>Your Tests</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        /* Base Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f8f9fa; /* Accurate light grey page background */
             margin: 0;
+            color: #212529; /* Default dark text color */
+        }
+
+        /* Top Bar for Welcome Message & Logout */
+        .top-bar {
+            padding: 10px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .top-bar-content {
+            max-width: 500px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .btn-logout {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 8px;
+            background-color: #dc3545;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Main Content Container */
+        .main-container {
+            max-width: 500px;
+            margin: auto;
             padding: 20px;
         }
-        .container {
-            max-width: 800px;
-            margin: auto;
-        }
+
+        /* Header ("Your tests" & "View all") */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         .header h2 {
             margin: 0;
+            font-size: 22px;
+            font-weight: 600;
         }
         .header a {
             text-decoration: none;
-            color: #007bff;
+            color: #0d6efd;
             font-weight: 500;
+            font-size: 16px;
         }
+
+        /* Filter Tabs */
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         .tab {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
+            padding: 8px 18px;
+            border: 1px solid #dee2e6;
+            border-radius: 50px; /* Pill shape */
             cursor: pointer;
             background-color: #fff;
-            color: #333;
+            color: #495057;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease-in-out;
         }
         .tab.active {
-            background-color: #333;
+            background-color: #212529; /* Dark background for active tab */
             color: #fff;
-            border-color: #333;
+            border-color: #212529;
         }
+
+        /* Test Card Styling */
         .test-card {
             background: #fff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
         }
         .test-card .status {
-            background-color: #e7f3ff;
-            color: #007bff;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
+            background-color: #d1fae5; /* Light green */
+            color: #065f46; /* Dark green text */
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 13px;
             font-weight: 500;
             display: inline-block;
-            margin-bottom: 10px;
-        }
-        .test-card .status.green {
-            background-color: #d4edda;
-            color: #155724;
+            margin-bottom: 15px;
         }
         .test-card h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            font-weight: 600;
         }
         .test-info {
             display: flex;
             gap: 20px;
-            color: #666;
+            color: #6c757d; /* Grey text for info */
             margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
         }
         .test-info span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px; /* Space between icon and text */
         }
+        .test-info .icon {
+            width: 16px;
+            height: 16px;
+        }
+        .secondary-text {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .view-syllabus {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0d6efd;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .view-syllabus .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Primary Button ("View Result") */
         .btn-result {
+            display: block;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
-            background-color: #007bff;
+            border-radius: 50px; /* Pill shape */
+            background-color: #0d6efd; /* Accurate blue */
             color: white;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            display: block;
             text-decoration: none;
-            box-sizing: border-box;
+            transition: background-color 0.2s;
         }
-        .btn-logout {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #dc3545;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .btn-result:hover {
+            background-color: #0b5ed7;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="top-bar">
-            <h2>Welcome, <span id="studentName"></span>!</h2>
+
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <span>Welcome, <b id="studentName">Student</b>!</span>
             <button id="logoutBtn" class="btn-logout">Logout</button>
         </div>
+    </div>
+
+    <div class="main-container">
         <div class="header">
             <h2>Your tests</h2>
             <a href="#">View all</a>
         </div>
         <div class="tabs">
-            <div class="tab active" data-tab="past">Past Tests</div>
+            <div class="tab">Upcoming</div>
+            <div class="tab active">Past Tests</div>
+            <div class="tab">Missed Tests</div>
         </div>
         <div id="testsList"><p>Loading tests...</p></div>
     </div>
 
-    <!-- Firebase SDKs - NOTE: firebase-auth.js is NOT needed -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
+        // --- SVG Icons ---
+        const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
+        const clockIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
+        const onlineIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M7 14h2a.5.5 0 0 1 0 1H7a.5.5 0 0 1 0-1z"/></svg>`;
+        const syllabusIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M5 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg>`;
+
         // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
@@ -149,22 +216,17 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        // Get the logged-in student's data from localStorage
         const student = JSON.parse(localStorage.getItem('user'));
         
         document.addEventListener('DOMContentLoaded', () => {
-            // "Auth Guard": If no student data is found, redirect to login page
             if (!student || student.role !== 'Student') {
                 window.location.href = 'index.html';
-                return; // Stop further execution
+                return;
             }
-            
-            // If logged in, show their name and load their tests
             document.getElementById('studentName').textContent = student.fullName;
             loadTests();
         });
 
-        // Logout functionality
         document.getElementById('logoutBtn').addEventListener('click', () => {
             localStorage.removeItem('user');
             window.location.href = 'index.html';
@@ -175,26 +237,18 @@
             testsListContainer.innerHTML = '<p>Loading tests...</p>';
 
             try {
-                const studentClass = student.class; // e.g., "11 NEET" or "10"
-                
-                // Create a list of classes to search for in the 'tests' collection
+                const studentClass = student.class;
                 let classQueryTargets = [studentClass];
-                
-                // If student is in 11 or 12, also search for the general class (e.g., "11")
                 if (studentClass.startsWith('11') || studentClass.startsWith('12')) {
-                    const generalClass = studentClass.split(' ')[0]; // Gets "11" from "11 NEET"
-                    classQueryTargets.push(generalClass); // Array becomes ["11 NEET", "11"]
+                    const generalClass = studentClass.split(' ')[0];
+                    classQueryTargets.push(generalClass);
                 }
                 
-                // Fetch tests where the class field is IN our target list
-                const testsSnapshot = await db.collection('tests').where('class', 'in', classQueryTargets).get();
-                
-                // Fetch all results for this student using their Firestore Document ID
+                const testsSnapshot = await db.collection('tests').where('class', 'in', classQueryTargets).orderBy('date', 'desc').get();
                 const resultsSnapshot = await db.collection('results').where('studentId', '==', student.id).get();
                 const studentResults = new Map();
                 resultsSnapshot.forEach(doc => {
-                    const result = doc.data();
-                    studentResults.set(result.testId, result);
+                    studentResults.set(doc.data().testId, doc.data());
                 });
 
                 if (testsSnapshot.empty) {
@@ -206,28 +260,30 @@
                 testsSnapshot.forEach(doc => {
                     const test = doc.data();
                     const testId = doc.id;
-                    // Only show tests for which the results are out (i.e., a result document exists)
                     if (studentResults.has(testId)) {
-                         const testDate = new Date(test.date);
-                         const formattedDate = testDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short'});
+                        const testDate = new Date(test.date);
+                        const formattedDate = testDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                        
                         testsHtml += `
                             <div class="test-card">
-                                <div class="status green">Results are out</div>
+                                <div class="status">Results are out</div>
                                 <h3>${test.name.toUpperCase()}</h3>
                                 <div class="test-info">
-                                    <span>📅 ${formattedDate}</span>
-                                    <span>🕒 180 Min</span>
-                                    <span>💻 Online</span>
+                                    <span>${calendarIcon} ${formattedDate}</span>
+                                    <span>${clockIcon} 180 Min</span>
+                                    <span>${onlineIcon} ${test.mode || 'Online'}</span>
                                 </div>
-                                <p style="color: #555; font-size: 14px;">All re-attempts taken for this test</p>
+                                <p class="secondary-text">All re-attempts taken for this test</p>
+                                <a href="#" class="view-syllabus">
+                                    ${syllabusIcon}
+                                    <span>View Syllabus</span>
+                                </a>
                                 <a href="4.html?testId=${testId}" class="btn-result">View Result</a>
                             </div>
                         `;
                     }
                 });
-
                 testsListContainer.innerHTML = testsHtml || '<p>No results are out for you yet.</p>';
-                
             } catch (error) {
                 console.error("Error fetching tests: ", error);
                 testsListContainer.innerHTML = '<p>Could not load tests. Please try again later.</p>';
@@ -235,4 +291,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
