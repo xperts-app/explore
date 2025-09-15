@@ -73,9 +73,10 @@
     <div class="login-container">
         <h2>Student Login</h2>
         <form id="loginForm">
+            <!-- UPDATED: Changed from email to mobileNumber -->
             <div class="input-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <label for="mobileNumber">Mobile Number</label>
+                <input type="tel" id="mobileNumber" required>
             </div>
             <div class="input-group">
                 <label for="password">Password</label>
@@ -108,7 +109,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Check for persistent student login
+        // Check for persistent student login (no changes here)
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('user'));
             if (user && user.role === 'Student') {
@@ -122,31 +123,42 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            // UPDATED: Get mobileNumber instead of email from the form
+            const mobileNumber = document.getElementById('mobileNumber').value;
             const password = document.getElementById('password').value;
             errorMessage.style.display = 'none';
 
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                // Step 1: Find the user in Firestore by their mobile number
+                const userQuery = await db.collection('users')
+                    .where('mobileNumber', '==', mobileNumber)
+                    .limit(1)
+                    .get();
+
+                if (userQuery.empty) {
+                    throw new Error("No account found with this mobile number.");
+                }
+
+                const userDoc = userQuery.docs[0];
+                const userData = userDoc.data();
+                const userEmail = userData.email;
+
+                if (!userEmail) {
+                    throw new Error("Account is misconfigured. Please contact admin.");
+                }
+
+                // Step 2: Use the retrieved email to sign in with Firebase Auth
+                const userCredential = await auth.signInWithEmailAndPassword(userEmail, password);
                 const user = userCredential.user;
 
-                // Get user role from Firestore
-                const userDocSnapshot = await db.collection('users').where('email', '==', user.email).limit(1).get();
-
-                if (userDocSnapshot.empty) {
-                    throw new Error("User data not found in database.");
-                }
-                
-                const userDoc = userDocSnapshot.docs[0];
-                const userData = userDoc.data();
-
+                // Step 3: Verify role and save session data
                 if (userData.role !== 'Student') {
-                    await auth.signOut(); // Log out the non-student user
+                    await auth.signOut();
                     throw new Error("This login is for students only.");
                 }
                 
-                // Store Firestore document ID and Auth UID
-                userData.id = userDoc.id; // Firestore Document ID (Important!)
+                // Add important IDs to the user data object
+                userData.id = userDoc.id; // Firestore Document ID
                 userData.uid = user.uid;  // Auth User ID
 
                 // Store user data for persistent session
@@ -156,7 +168,13 @@
                 window.location.href = '2.html';
 
             } catch (error) {
-                errorMessage.textContent = error.message;
+                // This will catch errors from both Firestore (e.g., "No account")
+                // and Firebase Auth (e.g., "wrong-password")
+                if (error.code === 'auth/wrong-password') {
+                    errorMessage.textContent = 'Incorrect password. Please try again.';
+                } else {
+                    errorMessage.textContent = error.message;
+                }
                 errorMessage.style.display = 'block';
             }
         });
