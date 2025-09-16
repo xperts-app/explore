@@ -10,10 +10,10 @@
         /* Base Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa; /* Accurate light grey page background */
+            background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
-            color: #212529; /* Default dark text color */
+            color: #212529;
         }
 
         /* Main container to center the content */
@@ -27,7 +27,7 @@
             display: inline-block;
             padding: 10px 24px;
             border-radius: 10px;
-            background-color: #212529; /* Dark background for active tab */
+            background-color: #212529;
             color: #fff;
             font-weight: 600;
             font-size: 15px;
@@ -39,14 +39,14 @@
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border: 1px solid #e9ecef;
-            overflow: hidden; /* This is key to making the top/bottom radius work */
+            overflow: hidden;
             margin-bottom: 20px;
         }
 
         /* The green "Results are out" banner */
         .status-banner {
-            background-color: #d1fae5; /* Light mint green */
-            color: #065f46; /* Dark green text */
+            background-color: #d1fae5;
+            color: #065f46;
             padding: 12px;
             font-size: 14px;
             font-weight: 600;
@@ -56,13 +56,14 @@
         /* The main white content area of the card */
         .card-content {
             background-color: #fff;
-            padding: 20px;
+            /* ADJUSTED FOR HEIGHT: Increased vertical padding */
+            padding: 24px; 
         }
         
         .card-content h3 {
             margin: 0 0 15px 0;
             font-size: 20px;
-            font-weight: 700; /* Bolder font for the title */
+            font-weight: 700;
             letter-spacing: 0.5px;
         }
 
@@ -70,14 +71,14 @@
         .test-info {
             display: flex;
             align-items: center;
-            color: #6c757d; /* Grey text for info */
+            color: #6c757d;
             font-size: 14px;
             font-weight: 500;
         }
         .test-info-item {
             display: flex;
             align-items: center;
-            gap: 8px; /* Space between icon and text */
+            gap: 8px;
         }
         .test-info-item .icon {
             width: 16px;
@@ -95,12 +96,13 @@
         .btn-result {
             display: block;
             width: 100%;
-            box-sizing: border-box; /* Prevents padding from breaking the layout */
-            margin-top: 25px; /* Space above the button */
+            box-sizing: border-box;
+            /* ADJUSTED FOR HEIGHT: Increased top margin to push the button down */
+            margin-top: 30px; 
             padding: 14px;
             border: none;
-            border-radius: 50px; /* Fully rounded pill shape */
-            background-color: #0d6efd; /* Accurate vibrant blue */
+            border-radius: 50px;
+            background-color: #0d6efd;
             color: white;
             font-size: 16px;
             font-weight: 600;
@@ -218,4 +220,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
