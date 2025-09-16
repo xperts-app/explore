@@ -7,7 +7,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
-        /* Base Styles */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f8f9fa;
@@ -16,13 +15,11 @@
             color: #212529;
         }
 
-        /* Main container to center the content */
         .main-container {
             max-width: 450px;
             margin: auto;
         }
 
-        /* The single "Past Tests" tab */
         .active-tab {
             display: inline-block;
             padding: 10px 24px;
@@ -34,16 +31,39 @@
             margin-bottom: 25px;
         }
         
-        /* This container holds the green banner and the white card together */
+        /* --- NEW CAROUSEL STYLES --- */
+        #testsList.carousel-container {
+            display: flex; /* Aligns items horizontally */
+            overflow-x: auto; /* Enables horizontal scrolling */
+            gap: 15px; /* Creates space between the cards */
+            padding-bottom: 20px; /* Space for the scrollbar if visible */
+            
+            /* Hides the scrollbar for a cleaner look */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            
+            /* Smooth snapping effect */
+            scroll-snap-type: x mandatory; 
+        }
+        #testsList.carousel-container::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, and Opera */
+        }
+        /* --- END NEW CAROUSEL STYLES --- */
+        
         .card-wrapper {
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
             border: 1px solid #e9ecef;
             overflow: hidden;
             margin-bottom: 20px;
+            
+            /* --- CAROUSEL ITEM STYLES --- */
+            flex-shrink: 0; /* Prevents cards from shrinking to fit */
+            width: 90%; /* Each card takes up 90% of the container width */
+            scroll-snap-align: center; /* Snaps the center of the card to the center of the viewport */
+            /* --- END CAROUSEL ITEM STYLES --- */
         }
 
-        /* The green "Results are out" banner */
         .status-banner {
             background-color: #d1fae5;
             color: #065f46;
@@ -53,10 +73,8 @@
             text-align: center;
         }
 
-        /* The main white content area of the card */
         .card-content {
             background-color: #fff;
-            /* ADJUSTED FOR HEIGHT: Increased vertical padding */
             padding: 24px; 
         }
         
@@ -67,7 +85,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Container for Date | Time | Mode */
         .test-info {
             display: flex;
             align-items: center;
@@ -85,19 +102,16 @@
             height: 16px;
         }
 
-        /* The vertical separator bar */
         .separator {
             border-right: 1px solid #dee2e6;
             height: 16px;
             margin: 0 15px;
         }
         
-        /* The main "View Result" button */
         .btn-result {
             display: block;
             width: 100%;
             box-sizing: border-box;
-            /* ADJUSTED FOR HEIGHT: Increased top margin to push the button down */
             margin-top: 30px; 
             padding: 14px;
             border: none;
@@ -120,7 +134,10 @@
 
     <div class="main-container">
         <div class="active-tab">Past Tests</div>
-        <div id="testsList"><p>Loading tests...</p></div>
+        <!-- This div will become the carousel container -->
+        <div id="testsList" class="carousel-container">
+            <p>Loading tests...</p>
+        </div>
     </div>
 
     <!-- Firebase SDKs -->
@@ -128,12 +145,12 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
-        // --- SVG Icons (for high-quality rendering) ---
+        // --- SVG Icons ---
         const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
         const clockIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
         const onlineIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M7 14h2a.5.5 0 0 1 0 1H7a.5.5 0 0 1 0-1z"/></svg>`;
 
-        // Firebase Config
+        // Firebase Config... (remains the same)
         const firebaseConfig = {
             apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
             authDomain: "xperts-data.firebaseapp.com",
@@ -203,6 +220,24 @@
                                         </div>
                                         <div class="separator"></div>
                                         <div class="test-info-item">
+                                            ${onlineIcon} <span>${test.mode || 'Online'}</span>
+                                        </div>
+                                    </div>
+                                    <a href="4.html?testId=${testId}" class="btn-result">View Result</a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                testsListContainer.innerHTML = testsHtml || '<p>No results are out for you yet.</p>';
+            } catch (error) {
+                console.error("Error fetching tests: ", error);
+                testsListContainer.innerHTML = '<p>Could not load tests. Please create the required Firestore index or try again later.</p>';
+            }
+        }
+    </script>
+</body>
+</html>                                        <div class="test-info-item">
                                             ${onlineIcon} <span>${test.mode || 'Online'}</span>
                                         </div>
                                     </div>
