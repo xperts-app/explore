@@ -6,7 +6,7 @@
 <style>
   body{
     margin:0;
-    background:#000;   /* black background */
+    background:#000;
     display:flex;
     flex-wrap:wrap;
     justify-content:center;
@@ -48,44 +48,60 @@
   const MAX_SLOTS=7;
   const grid=document.getElementById("grid");
 
+  // --- URL params ---
+  const params=new URLSearchParams(window.location.search);
+  const slotFilter=params.get("slot");   // e.g. ?slot=3
+  const typeFilter=params.get("type");   // e.g. ?type=video or ?type=image
+
   function render(docs){
     grid.innerHTML="";
     docs.forEach((doc)=>{
       if(doc.exists){
         const data=doc.data();
-        if(data.url){
-          if(data.url.toLowerCase().endsWith(".mp4")){ 
-            // video
-            const video=document.createElement("video");
-            video.src=data.url;
-            video.autoplay=true;
-            video.muted=true;
-            video.loop=true;
-            grid.appendChild(video);
-          }else{
-            // image (no extension filter anymore, will try anything else as image)
-            const img=document.createElement("img");
-            img.src=data.url;
-            img.onerror=()=>{ img.remove(); };
-            grid.appendChild(img);
-          }
+        if(!data.url) return;
+
+        // filter type
+        const isVideo=data.url.toLowerCase().endsWith(".mp4");
+        if(typeFilter==="video" && !isVideo) return;
+        if(typeFilter==="image" && isVideo) return;
+
+        if(isVideo){
+          const video=document.createElement("video");
+          video.src=data.url;
+          video.autoplay=true;
+          video.muted=true;
+          video.loop=true;
+          grid.appendChild(video);
+        }else{
+          const img=document.createElement("img");
+          img.src=data.url;
+          img.onerror=()=>{ img.remove(); };
+          grid.appendChild(img);
         }
       }
     });
   }
 
   async function loadAll(){
-    const promises=[];
-    for(let i=1;i<=MAX_SLOTS;i++){
-      promises.push(db.collection(SLOTS_COLLECTION).doc(String(i)).get());
+    let promises=[];
+    if(slotFilter){ // only one slot
+      promises.push(db.collection(SLOTS_COLLECTION).doc(String(slotFilter)).get());
+    }else{ // all slots
+      for(let i=1;i<=MAX_SLOTS;i++){
+        promises.push(db.collection(SLOTS_COLLECTION).doc(String(i)).get());
+      }
     }
     const docs=await Promise.all(promises);
     render(docs);
   }
 
   // Real-time updates
-  for(let i=1;i<=MAX_SLOTS;i++){
-    db.collection(SLOTS_COLLECTION).doc(String(i)).onSnapshot(loadAll);
+  if(slotFilter){
+    db.collection(SLOTS_COLLECTION).doc(String(slotFilter)).onSnapshot(loadAll);
+  }else{
+    for(let i=1;i<=MAX_SLOTS;i++){
+      db.collection(SLOTS_COLLECTION).doc(String(i)).onSnapshot(loadAll);
+    }
   }
   loadAll();
   </script>
