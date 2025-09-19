@@ -4,8 +4,22 @@
 <meta charset="utf-8">
 <title>Viewer — Images</title>
 <style>
-  body{margin:0;background:#000;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px;}
-  img{width:370px;height:500px;object-fit:cover;display:block;}
+  body{
+    margin:0;
+    background:#fff;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    padding:20px;
+  }
+  img{
+    width:370px;
+    height:500px;
+    object-fit:cover;
+    display:block;
+  }
 </style>
 </head>
 <body>
@@ -35,21 +49,14 @@
     docs.forEach((doc)=>{
       if(doc.exists){
         const data=doc.data();
-        if(data.url && /\.(jpe?g|png|gif|webp)$/i.test(data.url)){ // only image URLs
+        if(data.url){  // no extension check, try to show anything as image
           const img=document.createElement("img");
           img.src=data.url;
+          img.onerror=()=>{ img.remove(); }; // if not a real image, hide it
           grid.appendChild(img);
         }
       }
     });
-  }
-
-  // real-time listener on all slots
-  function subscribe(){
-    for(let i=1;i<=MAX_SLOTS;i++){
-      db.collection(SLOTS_COLLECTION).doc(String(i))
-        .onSnapshot(()=>loadAll());
-    }
   }
 
   async function loadAll(){
@@ -61,7 +68,10 @@
     render(docs);
   }
 
-  subscribe();
+  // Real-time updates
+  for(let i=1;i<=MAX_SLOTS;i++){
+    db.collection(SLOTS_COLLECTION).doc(String(i)).onSnapshot(loadAll);
+  }
   loadAll();
   </script>
 </body>
