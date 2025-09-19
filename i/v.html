@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Viewer — Images</title>
+<title>Viewer — Media</title>
 <style>
   body{
     margin:0;
-    background:#fff;
+    background:#000;   /* black background */
     display:flex;
     flex-wrap:wrap;
     justify-content:center;
@@ -14,11 +14,15 @@
     gap:12px;
     padding:20px;
   }
-  img{
+  img, video{
     width:370px;
     height:500px;
     object-fit:cover;
     display:block;
+    background:#000;
+  }
+  video{
+    pointer-events:none; /* disable clicks/controls */
   }
 </style>
 </head>
@@ -49,11 +53,22 @@
     docs.forEach((doc)=>{
       if(doc.exists){
         const data=doc.data();
-        if(data.url){  // no extension check, try to show anything as image
-          const img=document.createElement("img");
-          img.src=data.url;
-          img.onerror=()=>{ img.remove(); }; // if not a real image, hide it
-          grid.appendChild(img);
+        if(data.url){
+          if(data.url.toLowerCase().endsWith(".mp4")){ 
+            // video
+            const video=document.createElement("video");
+            video.src=data.url;
+            video.autoplay=true;
+            video.muted=true;
+            video.loop=true;
+            grid.appendChild(video);
+          }else{
+            // image (no extension filter anymore, will try anything else as image)
+            const img=document.createElement("img");
+            img.src=data.url;
+            img.onerror=()=>{ img.remove(); };
+            grid.appendChild(img);
+          }
         }
       }
     });
