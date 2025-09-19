@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Viewer — Images</title>
+<style>
+  body{margin:0;background:#000;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px;}
+  img{width:370px;height:500px;object-fit:cover;display:block;}
+</style>
+</head>
+<body>
+  <div id="grid"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+    authDomain: "xperts-data.firebaseapp.com",
+    projectId: "xperts-data",
+    storageBucket: "xperts-data.firebasestorage.app",
+    messagingSenderId: "934675149024",
+    appId: "1:934675149024:web:23486a5f38f65f103ce085",
+    measurementId: "G-6TS06NTDZQ"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db=firebase.firestore();
+  const SLOTS_COLLECTION="slots";
+  const MAX_SLOTS=7;
+  const grid=document.getElementById("grid");
+
+  function render(docs){
+    grid.innerHTML="";
+    docs.forEach((doc)=>{
+      if(doc.exists){
+        const data=doc.data();
+        if(data.url && /\.(jpe?g|png|gif|webp)$/i.test(data.url)){ // only image URLs
+          const img=document.createElement("img");
+          img.src=data.url;
+          grid.appendChild(img);
+        }
+      }
+    });
+  }
+
+  // real-time listener on all slots
+  function subscribe(){
+    for(let i=1;i<=MAX_SLOTS;i++){
+      db.collection(SLOTS_COLLECTION).doc(String(i))
+        .onSnapshot(()=>loadAll());
+    }
+  }
+
+  async function loadAll(){
+    const promises=[];
+    for(let i=1;i<=MAX_SLOTS;i++){
+      promises.push(db.collection(SLOTS_COLLECTION).doc(String(i)).get());
+    }
+    const docs=await Promise.all(promises);
+    render(docs);
+  }
+
+  subscribe();
+  loadAll();
+  </script>
+</body>
+</html>
