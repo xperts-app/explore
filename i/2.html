@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Viewer — Images (370×500)</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0;background:#f7f9fb;color:#111}
+  header{background:#fff;padding:18px 22px;border-bottom:1px solid #e6ecf5}
+  h1{margin:0;font-size:18px}
+  .container{max-width:1100px;margin:20px auto;padding:12px}
+  .grid{display:flex;flex-wrap:wrap;gap:14px}
+  .card{width:370px;height:500px;background:#fff;border-radius:8px;box-shadow:0 8px 22px rgba(15,23,42,0.06);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .card img{width:370px;height:500px;object-fit:cover;display:block}
+  .card video{width:370px;height:500px;object-fit:cover;display:block}
+  .empty{color:#6c7a89}
+  .controls{margin-top:12px;font-size:14px;color:#445}
+  .note{font-size:13px;color:#6b7280;margin-top:10px}
+  @media (max-width:820px){ .card{transform:scale(0.9);transform-origin:top left} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Viewer — Images (370×500)</h1>
+</header>
+
+<div class="container">
+  <div class="controls">
+    <span>Filter via query param. Examples: <code>?=image</code> (default), <code>?=video</code>, <code>?=3</code> (slot number)</span>
+  </div>
+
+  <div id="grid" class="grid" aria-live="polite" style="margin-top:14px"></div>
+  <div id="msg" class="note"></div>
+</div>
+
+<!-- Firebase SDK (v8) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+  authDomain: "xperts-data.firebaseapp.com",
+  projectId: "xperts-data",
+  storageBucket: "xperts-data.firebasestorage.app",
+  messagingSenderId: "934675149024",
+  appId: "1:934675149024:web:23486a5f38f65f103ce085",
+  measurementId: "G-6TS06NTDZQ"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const SLOTS_COLLECTION = 'slots';
+const MAX_SLOTS = 7;
+
+const grid = document.getElementById('grid');
+const msg = document.getElementById('msg');
+
+/* read simple query param format: the page expects "?=<value>".
+   value can be:
+   - "image" (default) => show images only
+   - "video" => show videos only
+   - "N" (1..7) => show slot N (image or video depending on its saved type)
+*/
+function getRawQueryValue() {
+  const raw = location.search;
+  if (!raw) return 'image';
+  // allow both "?=value" or "?type=value"
+  if (raw.startsWith('?=')) return decodeURIComponent(raw.substring(2)) || 'image';
+  const params = new URLSearchParams(raw);
+  if (params.has('')) return params.get('') || 'image'; // unlikely
+  // fallback: find first value
+  for (const [k,v] of params.entries()) {
+    if (v) return v;
+  }
+  return 'image';
+}
+
+async function loadAndRender(){
+  grid.innerHTML = '';
+  msg.textContent = '';
+  const q = getRawQueryValue().trim();
+  // Determine mode
+  const isNumber = /^\d+$/.test(q);
+  const want = q.toLowerCase();
+
+  try {
+    if (isNumber) {
+      const slot = Number(q);
+      if (slot < 1 || slot > MAX_SLOTS) {
+        msg.textContent = 'Slot number out of range (1..7).';
+        return;
+      }
+      const doc = await db.collection(SLOTS_COLLECTION).doc(String(slot)).get();
+      if (!doc.exists) {
+        msg.textContent = 'Slot '+slot+' is empty.';
+        return;
+      }
+      const data = doc.data();
+      renderSlot(slot, data);
+      return;
+    }
+
+    // not a number: load all slots and filter by type
+    const snapPromises = [];
+    for (let i=1;i<=MAX_SLOTS;i++){
+      snapPromises.push(db.collection(SLOTS_COLLECTION).doc(String(i)).get());
+    }
+    const docs = await Promise.all(snapPromises);
+    const rows = [];
+    docs.forEach((d,i) => {
+      if (d.exists) rows.push({slot: i+1, ...d.data()});
+    });
+
+    let filtered;
+    if (want === 'video') filtered = rows.filter(r => r.type === 'video');
+    else filtered = rows.filter(r => r.type === 'image'); // default is image
+
+    if (filtered.length === 0) {
+      msg.textContent = 'No items found for filter "'+q+'".';
+      return;
+    }
+
+    filtered.forEach(r => renderSlot(r.slot, r));
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'Failed to load content: ' + err.message;
+  }
+}
+
+function renderSlot(slotNumber, data){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.setAttribute('data-slot', String(slotNumber));
+  if (data.type === 'image') {
+    const img = document.createElement('img');
+    img.src = data.url;
+    img.alt = 'slot-'+slotNumber;
+    // image forced size by CSS (370x500)
+    img.onerror = ()=> { card.innerHTML = '<div class="empty">Image failed to load</div>'; };
+    card.appendChild(img);
+  } else {
+    // for video entries we render a video element sized to 370x500 (muted)
+    const vid = document.createElement('video');
+    vid.src = data.url;
+    vid.controls = true;
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.style.maxWidth = '370px';
+    vid.style.maxHeight = '500px';
+    vid.onerror = ()=> { card.innerHTML = '<div class="empty">Video failed to load</div>'; };
+    card.appendChild(vid);
+  }
+  grid.appendChild(card);
+}
+
+/* Kick off */
+loadAndRender();
+</script>
+</body>
+</html>
