@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Tests</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      color: #212529;
+    }
+    .main-container { max-width: 450px; margin: auto; }
+    .active-tab {
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 10px;
+      background-color: #212529;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 25px;
+    }
+    #testsList.carousel-container {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding-bottom: 20px;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      scroll-snap-type: x mandatory;
+    }
+    #testsList.carousel-container::-webkit-scrollbar { display: none; }
+    .card-wrapper {
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e9ecef;
+      overflow: hidden;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+      width: 90%;
+      scroll-snap-align: center;
+    }
+    .status-banner {
+      background-color: #d1fae5;
+      color: #065f46;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .card-content { background: #fff; padding: 24px; }
+    .card-content h3 { margin: 0 0 15px 0; font-size: 20px; font-weight: 700; }
+    .test-info { display: flex; align-items: center; color: #6c757d; font-size: 14px; font-weight: 500; }
+    .test-info-item { display: flex; align-items: center; gap: 8px; }
+    .test-info-item .icon { width: 16px; height: 16px; }
+    .separator { border-right: 1px solid #dee2e6; height: 16px; margin: 0 15px; }
+    .btn-result {
+      display: block;
+      width: 100%;
+      margin-top: 30px;
+      padding: 14px;
+      border: none;
+      border-radius: 50px;
+      background: #0d6efd;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn-result:hover { background: #0b5ed7; }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="active-tab">Past Tests</div>
+    <div id="testsList" class="carousel-container">
+      <p>Loading tests...</p>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <script>
+    // --- SVG Icons ---
+    const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
+    const clockIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
+    const onlineIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M7 14h2a.5.5 0 0 1 0 1H7a.5.5 0 0 1 0-1z"/></svg>`;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+      authDomain: "xperts-data.firebaseapp.com",
+      projectId: "xperts-data",
+      storageBucket: "xperts-data.appspot.com",
+      messagingSenderId: "934675149024",
+      appId: "1:934675149024:web:23486a5f38f65f103ce085",
+      measurementId: "G-6TS06NTDZQ"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        let student = JSON.parse(localStorage.getItem("user"));
+        if (!student) {
+          const doc = await db.collection("users").doc(user.uid).get();
+          if (doc.exists) {
+            student = { id: user.uid, ...doc.data() };
+            localStorage.setItem("user", JSON.stringify(student));
+          }
+        }
+        if (!student || student.role !== "Student") {
+          window.location.href = "index.html";
+          return;
+        }
+        loadTests(student);
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    async function loadTests(student) {
+      const testsListContainer = document.getElementById("testsList");
+      testsListContainer.innerHTML = "<p>Loading tests...</p>";
+      try {
+        const studentClass = student.class;
+        let classQueryTargets = [studentClass];
+        if (studentClass.startsWith("11") || studentClass.startsWith("12")) {
+          const generalClass = studentClass.split(" ")[0];
+          classQueryTargets.push(generalClass);
+        }
+        const testsSnapshot = await db.collection("tests")
+          .where("class", "in", classQueryTargets)
+          .orderBy("date", "desc").get();
+        const resultsSnapshot = await db.collection("results")
+          .where("studentId", "==", student.id).get();
+        const studentResults = new Map();
+        resultsSnapshot.forEach(doc => studentResults.set(doc.data().testId, doc.data()));
+        if (testsSnapshot.empty) {
+          testsListContainer.innerHTML = "<p>No tests found for your class.</p>";
+          return;
+        }
+        let testsHtml = "";
+        testsSnapshot.forEach(doc => {
+          const test = doc.data();
+          const testId = doc.id;
+          if (studentResults.has(testId)) {
+            const testDate = new Date(test.date);
+            const formattedDate = testDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+            testsHtml += `
+              <div class="card-wrapper">
+                <div class="status-banner">Results are out</div>
+                <div class="card-content">
+                  <h3>${test.name.toUpperCase()}</h3>
+                  <div class="test-info">
+                    <div class="test-info-item">${calendarIcon}<span>${formattedDate}</span></div>
+                    <div class="separator"></div>
+                    <div class="test-info-item">${clockIcon}<span>180 Min</span></div>
+                    <div class="separator"></div>
+                    <div class="test-info-item">${onlineIcon}<span>${test.mode || "Online"}</span></div>
+                  </div>
+                  <a href="sub00.html?testId=${testId}" class="btn-result">View Result</a>
+                </div>
+              </div>`;
+          }
+        });
+        testsListContainer.innerHTML = testsHtml || "<p>No results are out for you yet.</p>";
+      } catch (error) {
+        console.error("Error fetching tests: ", error);
+        testsListContainer.innerHTML = "<p>Could not load tests. Please create the required Firestore index or try again later.</p>";
+      }
+    }
+  </script>
+</body>
+</html>
