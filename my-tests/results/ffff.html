@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Performance Report</title>
+<title>Your Tests</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 body {
@@ -11,32 +11,40 @@ body {
     background-color: #f8f9fa;
     margin: 0;
     padding: 20px;
-    color: #212529;
 }
 .main-container {
     max-width: 450px;
     margin: auto;
 }
-.back-button {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: 500;
-    color: #333;
+.active-tab {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 10px;
+    background-color: #212529;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 25px;
 }
-#reportList {
+#testsList.carousel-container {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
 }
+#testsList.carousel-container::-webkit-scrollbar { display: none; }
 .card-wrapper {
     border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
     overflow: hidden;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+    width: 90%;
+    scroll-snap-align: center;
 }
 .status-banner {
     background-color: #d1fae5;
@@ -73,33 +81,31 @@ body {
     height: 16px;
     margin: 0 15px;
 }
-.marks-section {
-    list-style: none;
-    padding: 0;
-    margin: 15px 0 0 0;
-}
-.marks-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.subject-name { font-weight: 500; }
-.subject-marks { font-weight: 600; color: #007bff; }
-.absent-message {
-    text-align: center;
-    padding: 20px;
+.btn-result {
+    display: block;
+    width: 100%;
+    margin-top: 30px; 
+    padding: 14px;
+    border: none;
+    border-radius: 50px;
+    background-color: #0d6efd;
+    color: white;
     font-size: 16px;
-    color: #dc3545;
     font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s;
 }
+.btn-result:hover { background-color: #0b5ed7; }
 </style>
 </head>
 <body>
+
 <div class="main-container">
-    <div class="back-button" onclick="window.history.back()">&larr; Back to Tests</div>
-    <div id="reportList">
-        <p>Loading report...</p>
+    <div class="active-tab">Past Tests</div>
+    <div id="testsList" class="carousel-container">
+        <p>Loading tests...</p>
     </div>
 </div>
 
@@ -111,101 +117,92 @@ const firebaseConfig = {
     apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
     authDomain: "xperts-data.firebaseapp.com",
     projectId: "xperts-data",
-    storageBucket: "xperts-data.firebasestorage.app",
+    storageBucket: "xperts-data.appspot.com",
     messagingSenderId: "934675149024",
     appId: "1:934675149024:web:23486a5f38f65f103ce085"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const loggedInUserId = localStorage.getItem('loggedInUserId');
+// --- SVG Icons ---
+const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
+const clockIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>`;
+const onlineIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h8zM4 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M7 14h2a.5.5 0 0 1 0 1H7a.5.5 0 0 1 0-1z"/></svg>`;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (!loggedInUserId) {
         window.location.href = 'index.html';
         return;
     }
 
-    try {
-        const userDoc = await db.collection('users').doc(loggedInUserId).get();
-        if (!userDoc.exists || userDoc.data().role !== 'Student') {
-            localStorage.clear();
-            window.location.href = 'index.html';
-            return;
-        }
-        const student = { id: userDoc.id, ...userDoc.data() };
-        loadReport(student);
-    } catch (err) {
-        console.error(err);
+    const userDoc = await db.collection('users').doc(loggedInUserId).get();
+    if (!userDoc.exists || userDoc.data().role !== 'Student') {
         localStorage.clear();
         window.location.href = 'index.html';
-    }
-});
-
-async function loadReport(student) {
-    const reportList = document.getElementById('reportList');
-    const urlParams = new URLSearchParams(window.location.search);
-    const testId = urlParams.get('testId');
-
-    if (!testId) {
-        reportList.innerHTML = '<p>Error: Test ID is missing from the URL.</p>';
         return;
     }
 
-    try {
-        const resultSnap = await db.collection('results')
-            .where('testId','==',testId)
-            .where('studentId','==',student.id)
-            .limit(1).get();
+    const student = { id: userDoc.id, ...userDoc.data() };
+    loadTests(student);
+});
 
-        if (resultSnap.empty) {
-            reportList.innerHTML = '<p>No results found for this test.</p>';
+async function loadTests(student) {
+    const container = document.getElementById('testsList');
+    container.innerHTML = '<p>Loading tests...</p>';
+
+    try {
+        const classQueryTargets = [student.class];
+        if (student.class.startsWith('11') || student.class.startsWith('12')) {
+            classQueryTargets.push(student.class.split(' ')[0]);
+        }
+
+        const testsSnap = await db.collection('tests')
+            .where('class','in',classQueryTargets)
+            .orderBy('date','desc').get();
+
+        const resultsSnap = await db.collection('results')
+            .where('studentId','==',student.id).get();
+
+        const studentResults = new Map();
+        resultsSnap.forEach(doc => studentResults.set(doc.data().testId, doc.data()));
+
+        if (testsSnap.empty) {
+            container.innerHTML = '<p>No tests found for your class.</p>';
             return;
         }
 
-        const result = resultSnap.docs[0].data();
-        const testDoc = await db.collection('tests').doc(testId).get();
-        if (!testDoc.exists) throw new Error("Test not found.");
+        let html = '';
+        testsSnap.forEach(doc => {
+            const test = doc.data();
+            const testId = doc.id;
+            if (studentResults.has(testId)) {
+                const testDate = new Date(test.date.seconds*1000);
+                const formattedDate = testDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
-        const test = testDoc.data();
-        const testDate = new Date(test.date.seconds*1000);
-        const formattedDate = testDate.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-
-        let html = `<div class="card-wrapper">
-            <div class="status-banner">Results are out</div>
-            <div class="card-content">
-                <h3>${test.name.toUpperCase()}</h3>
-                <div class="test-info">
-                    <div class="test-info-item">Date: ${formattedDate}</div>
-                    <div class="separator"></div>
-                    <div class="test-info-item">Duration: ${test.duration || 180} Min</div>
-                    <div class="separator"></div>
-                    <div class="test-info-item">Mode: ${test.mode || 'ONLINE'}</div>
-                </div>`;
-
-        if(result.status === 'Absent') {
-            html += `<div class="absent-message">You were marked ABSENT for this test.</div>`;
-        } else {
-            html += `<ul class="marks-section">
-                        <li class="marks-item" style="font-weight:600;">
-                            <span class="subject-name">Subject</span>
-                            <span class="subject-marks">Marks</span>
-                        </li>`;
-            for(const subject in result.marks) {
-                html += `<li class="marks-item">
-                            <span class="subject-name">${subject}</span>
-                            <span class="subject-marks">${result.marks[subject].toFixed(2)}</span>
-                        </li>`;
+                html += `
+                    <div class="card-wrapper">
+                        <div class="status-banner">Results are out</div>
+                        <div class="card-content">
+                            <h3>${test.name.toUpperCase()}</h3>
+                            <div class="test-info">
+                                <div class="test-info-item">${calendarIcon}<span>${formattedDate}</span></div>
+                                <div class="separator"></div>
+                                <div class="test-info-item">${clockIcon}<span>180 Min</span></div>
+                                <div class="separator"></div>
+                                <div class="test-info-item">${onlineIcon}<span>${test.mode || 'Online'}</span></div>
+                            </div>
+                            <a href="3.html?testId=${testId}" class="btn-result">View Result</a>
+                        </div>
+                    </div>
+                `;
             }
-            html += `</ul>`;
-        }
+        });
 
-        html += `</div></div>`;
-        reportList.innerHTML = html;
-
+        container.innerHTML = html || '<p>No results are out for you yet.</p>';
     } catch(err) {
         console.error(err);
-        reportList.innerHTML = `<p>Error loading report: ${err.message}</p>`;
+        container.innerHTML = '<p>Could not load tests. Please try again later.</p>';
     }
 }
 </script>
