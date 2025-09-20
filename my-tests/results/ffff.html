@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+    color: #212529;
+}
+.main-container {
+    max-width: 450px;
+    margin: auto;
+}
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+}
+#reportList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.card-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+}
+.status-banner {
+    background-color: #d1fae5;
+    color: #065f46;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+.card-content {
+    background-color: #fff;
+    padding: 24px;
+}
+.card-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.test-info {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+.test-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.separator {
+    border-right: 1px solid #dee2e6;
+    height: 16px;
+    margin: 0 15px;
+}
+.marks-section {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 0 0;
+}
+.marks-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.subject-name { font-weight: 500; }
+.subject-marks { font-weight: 600; color: #007bff; }
+.absent-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #dc3545;
+    font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div class="main-container">
+    <div class="back-button" onclick="window.history.back()">&larr; Back to Tests</div>
+    <div id="reportList">
+        <p>Loading report...</p>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+    authDomain: "xperts-data.firebaseapp.com",
+    projectId: "xperts-data",
+    storageBucket: "xperts-data.firebasestorage.app",
+    messagingSenderId: "934675149024",
+    appId: "1:934675149024:web:23486a5f38f65f103ce085"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const loggedInUserId = localStorage.getItem('loggedInUserId');
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!loggedInUserId) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    try {
+        const userDoc = await db.collection('users').doc(loggedInUserId).get();
+        if (!userDoc.exists || userDoc.data().role !== 'Student') {
+            localStorage.clear();
+            window.location.href = 'index.html';
+            return;
+        }
+        const student = { id: userDoc.id, ...userDoc.data() };
+        loadReport(student);
+    } catch (err) {
+        console.error(err);
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+});
+
+async function loadReport(student) {
+    const reportList = document.getElementById('reportList');
+    const urlParams = new URLSearchParams(window.location.search);
+    const testId = urlParams.get('testId');
+
+    if (!testId) {
+        reportList.innerHTML = '<p>Error: Test ID is missing from the URL.</p>';
+        return;
+    }
+
+    try {
+        const resultSnap = await db.collection('results')
+            .where('testId','==',testId)
+            .where('studentId','==',student.id)
+            .limit(1).get();
+
+        if (resultSnap.empty) {
+            reportList.innerHTML = '<p>No results found for this test.</p>';
+            return;
+        }
+
+        const result = resultSnap.docs[0].data();
+        const testDoc = await db.collection('tests').doc(testId).get();
+        if (!testDoc.exists) throw new Error("Test not found.");
+
+        const test = testDoc.data();
+        const testDate = new Date(test.date.seconds*1000);
+        const formattedDate = testDate.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+        let html = `<div class="card-wrapper">
+            <div class="status-banner">Results are out</div>
+            <div class="card-content">
+                <h3>${test.name.toUpperCase()}</h3>
+                <div class="test-info">
+                    <div class="test-info-item">Date: ${formattedDate}</div>
+                    <div class="separator"></div>
+                    <div class="test-info-item">Duration: ${test.duration || 180} Min</div>
+                    <div class="separator"></div>
+                    <div class="test-info-item">Mode: ${test.mode || 'ONLINE'}</div>
+                </div>`;
+
+        if(result.status === 'Absent') {
+            html += `<div class="absent-message">You were marked ABSENT for this test.</div>`;
+        } else {
+            html += `<ul class="marks-section">
+                        <li class="marks-item" style="font-weight:600;">
+                            <span class="subject-name">Subject</span>
+                            <span class="subject-marks">Marks</span>
+                        </li>`;
+            for(const subject in result.marks) {
+                html += `<li class="marks-item">
+                            <span class="subject-name">${subject}</span>
+                            <span class="subject-marks">${result.marks[subject].toFixed(2)}</span>
+                        </li>`;
+            }
+            html += `</ul>`;
+        }
+
+        html += `</div></div>`;
+        reportList.innerHTML = html;
+
+    } catch(err) {
+        console.error(err);
+        reportList.innerHTML = `<p>Error loading report: ${err.message}</p>`;
+    }
+}
+</script>
+</body>
+</html>
