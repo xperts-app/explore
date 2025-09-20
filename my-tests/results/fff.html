@@ -121,7 +121,6 @@ body {
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -137,18 +136,35 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const student = JSON.parse(localStorage.getItem('user')) || {};
-document.addEventListener('DOMContentLoaded', () => {
-    if (!student.id || student.role !== 'Student') {
+// --- AUTH CHECK USING MAIN LOGIN ---
+const loggedInUserId = localStorage.getItem('loggedInUserId');
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!loggedInUserId) {
         window.location.href = 'index.html';
         return;
     }
-    loadResults();
+    
+    try {
+        const userDoc = await db.collection('users').doc(loggedInUserId).get();
+        if (!userDoc.exists || userDoc.data().role !== 'Student') {
+            localStorage.clear();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const student = { id: userDoc.id, ...userDoc.data() };
+        loadResults(student);
+    } catch (err) {
+        console.error(err);
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
 });
 
 const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
 
-async function loadResults() {
+async function loadResults(student) {
     const container = document.getElementById('resultsList');
     container.innerHTML = '<p>Loading results...</p>';
 
