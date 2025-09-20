@@ -6,24 +6,45 @@
   <title>All Tests</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f0f2f5;
       margin: 0;
       padding: 20px;
     }
+
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
     }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0;
+      color: #222;
+    }
+
     .test-card {
       background: #fff;
       border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      margin-bottom: 25px;
       padding: 20px;
       position: relative;
+      transition: transform 0.2s ease;
     }
+
+    .test-card:hover {
+      transform: translateY(-3px);
+    }
+
     .status-bar {
       background: #d1f1df;
       color: #087f23;
@@ -33,12 +54,19 @@
       border-radius: 15px 15px 0 0;
       margin: -20px -20px 15px -20px;
     }
+
+    .status-bar.upcoming {
+      background: #ffe5b4;
+      color: #b35a00;
+    }
+
     .test-title {
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 12px;
       color: #000;
     }
+
     .test-info {
       display: flex;
       flex-wrap: wrap;
@@ -47,25 +75,28 @@
       color: #555;
       margin-bottom: 15px;
     }
+
     .test-info div {
       display: flex;
       align-items: center;
       gap: 6px;
     }
+
     .test-info i {
       font-size: 14px;
       color: #555;
     }
+
     .btn-result {
       display: block;
       width: 100%;
       margin-top: 10px;
-      padding: 12px 0; /* Fixed padding */
+      padding: 12px 0;
       border: none;
       border-radius: 20px;
       background-color: #0d6efd;
       color: white;
-      font-size: 15px; /* Slightly larger text */
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
@@ -73,17 +104,33 @@
       transition: background-color 0.2s;
       box-sizing: border-box;
     }
+
     .btn-result:hover {
       background-color: #0b5ed7;
     }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 13px;
+      color: #777;
+    }
   </style>
 
-  <!-- Icons -->
+  <!-- FontAwesome icons -->
   <script src="https://kit.fontawesome.com/4b3b6a1c8d.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <div class="container" id="testsContainer">
-    <p>Loading tests...</p>
+  <div class="container">
+    <div class="header">
+      <h1>Available Tests</h1>
+    </div>
+    <div id="testsContainer">
+      <p>Loading tests...</p>
+    </div>
+    <div class="footer">
+      &copy; 2025 Xperts App
+    </div>
   </div>
 
   <!-- Firebase SDK -->
@@ -120,7 +167,7 @@
     async function loadTests() {
       const container = document.getElementById('testsContainer');
       try {
-        const snapshot = await db.collection('tests').get();
+        const snapshot = await db.collection('tests').orderBy('date', 'desc').get();
         if (snapshot.empty) {
           container.innerHTML = "<p>No tests available.</p>";
           return;
@@ -129,19 +176,28 @@
         snapshot.forEach(doc => {
           const test = doc.data();
           const testDate = new Date(test.date);
-          const formattedDate = testDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+          const formattedDate = testDate.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short'
+          });
+
+          // Check if results are available
+          const statusClass = test.resultsAvailable ? "status-bar" : "status-bar upcoming";
+          const statusText = test.resultsAvailable ? "Results are out" : "Upcoming Test";
 
           const card = document.createElement('div');
           card.className = "test-card";
           card.innerHTML = `
-            <div class="status-bar">Results are out</div>
+            <div class="${statusClass}">${statusText}</div>
             <div class="test-title">${test.name.toUpperCase()}</div>
             <div class="test-info">
               <div><i class="fa-regular fa-calendar"></i> ${formattedDate}</div>
               <div><i class="fa-regular fa-clock"></i> ${test.duration || 'N/A'} Min</div>
               <div><i class="fa-regular fa-clipboard"></i> ${test.mode || 'Online'}</div>
             </div>
-            <a href="result.html?testId=${doc.id}" class="btn-result">View Result</a>
+            ${test.resultsAvailable
+              ? `<a href="result.html?testId=${doc.id}" class="btn-result">View Result</a>`
+              : `<button class="btn-result" disabled>Result Pending</button>`}
           `;
           container.appendChild(card);
         });
