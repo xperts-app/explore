@@ -1,84 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Results - Student</title>
-  <style>
-    body { font-family: 'Poppins', sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
-    h1 { color: #1d2c3c; text-align: center; }
-    .results-container { max-width: 600px; margin: 20px auto; }
-    .result-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-    .result-card h3 { margin: 0 0 10px 0; font-size: 18px; color: #0066ff; }
-    .result-card p { margin: 5px 0; color: #333; font-size: 14px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Results - Student</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+    color: #212529;
+}
+
+.main-container {
+    max-width: 450px;
+    margin: auto;
+}
+
+.active-tab {
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 10px;
+    background-color: #212529;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 25px;
+}
+
+#resultsList.carousel-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+}
+
+#resultsList.carousel-container::-webkit-scrollbar { display: none; }
+
+.card-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+    width: 90%;
+    scroll-snap-align: center;
+}
+
+.status-banner {
+    background-color: #d1fae5;
+    color: #065f46;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.card-content {
+    background-color: #fff;
+    padding: 24px; 
+}
+
+.card-content h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.test-info {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.test-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.test-info-item .icon { width: 16px; height: 16px; }
+.separator { border-right: 1px solid #dee2e6; height: 16px; margin: 0 15px; }
+
+.btn-result {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 30px; 
+    padding: 14px;
+    border: none;
+    border-radius: 50px;
+    background-color: #0d6efd;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.btn-result:hover { background-color: #0b5ed7; }
+</style>
 </head>
 <body>
 
-  <h1>My Test Results</h1>
-  <div class="results-container" id="resultsContainer">
-    <p>Loading your results...</p>
-  </div>
+<div class="main-container">
+    <div class="active-tab">My Results</div>
+    <div id="resultsList" class="carousel-container">
+        <p>Loading results...</p>
+    </div>
+</div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
-      authDomain: "xperts-data.firebaseapp.com",
-      projectId: "xperts-data",
-      storageBucket: "xperts-data.firebasestorage.app",
-      messagingSenderId: "934675149024",
-      appId: "1:934675149024:web:23486a5f38f65f103ce085"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    async function loadResults() {
-      const userId = localStorage.getItem('loggedInUserId');
-      const role = localStorage.getItem('loggedInUserRole');
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+    authDomain: "xperts-data.firebaseapp.com",
+    projectId: "xperts-data",
+    storageBucket: "xperts-data.firebasestorage.app",
+    messagingSenderId: "934675149024",
+    appId: "1:934675149024:web:23486a5f38f65f103ce085"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-      if (!userId || role !== 'Student') {
-        window.location.href = "index.html";
+const student = JSON.parse(localStorage.getItem('user')) || {};
+document.addEventListener('DOMContentLoaded', () => {
+    if (!student.id || student.role !== 'Student') {
+        window.location.href = 'index.html';
         return;
-      }
-
-      try {
-        const resultsContainer = document.getElementById('resultsContainer');
-
-        // Fetch results for this student
-        const resultsSnap = await db.collection('results').where('studentId', '==', userId).get();
-        if (resultsSnap.empty) {
-          resultsContainer.innerHTML = "<p>No results found yet.</p>";
-          return;
-        }
-
-        resultsContainer.innerHTML = '';
-        for (const doc of resultsSnap.docs) {
-          const result = doc.data();
-
-          // Fetch test info for each result
-          const testDoc = await db.collection('tests').doc(result.testId).get();
-          const testName = testDoc.exists ? testDoc.data().name : 'Unknown Test';
-
-          const card = document.createElement('div');
-          card.className = 'result-card';
-          card.innerHTML = `
-            <h3>${testName}</h3>
-            <p><strong>Score:</strong> ${result.score || 'N/A'}</p>
-            <p><strong>Status:</strong> ${result.passed ? 'Passed' : 'Failed'}</p>
-            <p><strong>Date:</strong> ${result.date ? new Date(result.date.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
-          `;
-          resultsContainer.appendChild(card);
-        }
-
-      } catch (error) {
-        console.error("Error loading results:", error);
-        document.getElementById('resultsContainer').innerHTML = "<p>Failed to load results. Try again later.</p>";
-      }
     }
+    loadResults();
+});
 
-    document.addEventListener('DOMContentLoaded', loadResults);
-  </script>
+const calendarIcon = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>`;
+
+async function loadResults() {
+    const container = document.getElementById('resultsList');
+    container.innerHTML = '<p>Loading results...</p>';
+
+    try {
+        const resultsSnap = await db.collection('results').where('studentId', '==', student.id).get();
+        if (resultsSnap.empty) {
+            container.innerHTML = '<p>No results found yet.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        for (const doc of resultsSnap.docs) {
+            const result = doc.data();
+            const testDoc = await db.collection('tests').doc(result.testId).get();
+            const test = testDoc.exists ? testDoc.data() : { name: 'Unknown Test', date: null };
+
+            const dateFormatted = test.date ? new Date(test.date.seconds*1000).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'N/A';
+            
+            const card = document.createElement('div');
+            card.className = 'card-wrapper';
+            card.innerHTML = `
+                <div class="status-banner">Result Available</div>
+                <div class="card-content">
+                    <h3>${test.name.toUpperCase()}</h3>
+                    <div class="test-info">
+                        <div class="test-info-item">${calendarIcon} <span>${dateFormatted}</span></div>
+                        <div class="separator"></div>
+                        <div class="test-info-item"><span>Score: ${result.score || 'N/A'}</span></div>
+                    </div>
+                    <a href="sub00.html?testId=${result.testId}" class="btn-result">View Details</a>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p>Error loading results. Please try again later.</p>';
+    }
+}
+</script>
 </body>
 </html>
