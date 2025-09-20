@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .subjects-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .subject-item {
+            display: flex;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        td input[type="number"] {
+            width: 60px;
+        }
+        td input[type="number"]:disabled {
+            background-color: #e9ecef;
+        }
+        #studentsListContainer, #subjectsContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Admin Panel - Create Test</h2>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="testName">Test Name</label>
+                <input type="text" id="testName" placeholder="e.g., MINOR TEST 01">
+            </div>
+            <div class="form-group">
+                <label for="testDate">Test Date</label>
+                <input type="date" id="testDate">
+            </div>
+            <div class="form-group">
+                <label for="testMode">Test Mode</label>
+                <select id="testMode">
+                    <option value="ONLINE">Online</option>
+                    <option value="OFFLINE">Offline</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="classSelect">Select Class</label>
+                <select id="classSelect">
+                    <option value="">-- Choose a Class --</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                    <option value="11">Class 11 (NEET + JEE)</option>
+                    <option value="12">Class 12 (NEET + JEE)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="subjectsContainer" class="form-section">
+            <h3>Select Subjects</h3>
+            <div id="subjectsCheckboxes" class="subjects-container"></div>
+            <button id="loadStudentsBtn" class="btn" style="margin-top: 15px;">Load Students</button>
+        </div>
+
+        <div id="studentsListContainer" class="form-section">
+            <h3>Enter Student Marks</h3>
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <!-- Header updated for Absent checkbox -->
+                        <th>Absent</th>
+                        <th>Student Name (Stream)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button id="saveResultsBtn" class="btn" style="margin-top: 20px;">Save Test & Results</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Config and initial variables... (remain the same)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk",
+            authDomain: "xperts-data.firebaseapp.com",
+            projectId: "xperts-data",
+            storageBucket: "xperts-data.appspot.com",
+            messagingSenderId: "934675149024",
+            appId: "1:934675149024:web:23486a5f38f65f103ce085",
+            measurementId: "G-6TS06NTDZQ"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const classSelect = document.getElementById('classSelect');
+        const subjectsContainer = document.getElementById('subjectsContainer');
+        const subjectsCheckboxes = document.getElementById('subjectsCheckboxes');
+        const studentsListContainer = document.getElementById('studentsListContainer');
+        const studentsTable = document.getElementById('studentsTable');
+        const studentsTableBody = studentsTable.querySelector('tbody');
+        const studentsTableHeader = studentsTable.querySelector('thead tr');
+        const subjectGroups = {
+            junior: ["English", "Physics", "Chemistry", "Biology", "Mathematics", "Social Science"],
+            senior: ["Physics", "Chemistry", "Biology", "Mathematics"]
+        };
+
+        // Class selection logic... (remains the same)
+        classSelect.addEventListener('change', () => {
+            const selectedClass = classSelect.value;
+            subjectsCheckboxes.innerHTML = '';
+            studentsListContainer.style.display = 'none';
+            if (!selectedClass) {
+                subjectsContainer.style.display = 'none';
+                return;
+            }
+            const subjectsToShow = (selectedClass === '11' || selectedClass === '12') ? subjectGroups.senior : subjectGroups.junior;
+            subjectsToShow.forEach(subject => {
+                subjectsCheckboxes.innerHTML += `<div class="subject-item"><input type="checkbox" id="subj_${subject}" name="subject" value="${subject}"><label for="subj_${subject}" style="margin-left: 5px;">${subject}</label></div>`;
+            });
+            subjectsContainer.style.display = 'block';
+        });
+
+        // Load students logic... (updated to add Absent checkbox)
+        document.getElementById('loadStudentsBtn').addEventListener('click', async () => {
+            const selectedClass = classSelect.value;
+            const selectedSubjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
+            if (!selectedClass || selectedSubjects.length === 0) {
+                alert("Please select a class and at least one subject.");
+                return;
+            }
+            
+            studentsTableBody.innerHTML = '';
+            studentsTableHeader.innerHTML = '<th>Absent</th><th>Student Name (Stream)</th>';
+            selectedSubjects.forEach(subject => studentsTableHeader.innerHTML += `<th>${subject}</th>`);
+            
+            let query = db.collection('users').where('role', '==', 'Student');
+            let displayClassName = `Class ${selectedClass}`;
+            if (selectedClass === '11' || selectedClass === '12') {
+                query = query.where('class', 'in', [`${selectedClass} NEET`, `${selectedClass} JEE`]);
+                displayClassName += " (NEET + JEE)";
+            } else {
+                query = query.where('class', '==', selectedClass);
+            }
+            
+            const studentsSnapshot = await query.get();
+            if (studentsSnapshot.empty) {
+                studentsTableBody.innerHTML = `<tr><td colspan="${selectedSubjects.length + 2}">No students found for ${displayClassName}.</td></tr>`;
+            } else {
+                studentsSnapshot.forEach(doc => {
+                    const student = doc.data();
+                    let marksInputs = selectedSubjects.map(subject => `<td><input type="number" class="mark-input" data-subject="${subject}" placeholder="0"></td>`).join('');
+                    studentsTableBody.innerHTML += `
+                        <tr data-id="${doc.id}" data-name="${student.fullName}">
+                            <td><input type="checkbox" class="absent-checkbox"></td>
+                            <td>${student.fullName} (${student.class})</td>
+                            ${marksInputs}
+                        </tr>`;
+                });
+            }
+            studentsListContainer.style.display = 'block';
+        });
+
+        // NEW: Event listener to disable mark inputs when "Absent" is checked
+        studentsTable.addEventListener('change', (e) => {
+            if (e.target.classList.contains('absent-checkbox')) {
+                const row = e.target.closest('tr');
+                const markInputs = row.querySelectorAll('.mark-input');
+                markInputs.forEach(input => {
+                    input.disabled = e.target.checked;
+                    if (e.target.checked) {
+                        input.value = ''; // Clear value if marked absent
+                    }
+                });
+            }
+        });
+
+        // Save results logic... (updated to handle absent students)
+        document.getElementById('saveResultsBtn').addEventListener('click', async () => {
+            const testName = document.getElementById('testName').value.trim();
+            const testDate = document.getElementById('testDate').value;
+            const className = classSelect.value;
+            const testMode = document.getElementById('testMode').value;
+            if (!testName || !testDate || !className) {
+                alert('Please fill out all test details.');
+                return;
+            }
+
+            try {
+                const testRef = await db.collection('tests').add({ name: testName, date: testDate, class: className, mode: testMode, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                const batch = db.batch();
+                studentsTableBody.querySelectorAll('tr').forEach(row => {
+                    if (!row.dataset.id) return;
+                    
+                    const isAbsent = row.querySelector('.absent-checkbox').checked;
+                    let resultData;
+
+                    if (isAbsent) {
+                        resultData = {
+                            studentId: row.dataset.id,
+                            studentName: row.dataset.name,
+                            testId: testRef.id,
+                            testName: testName,
+                            class: className,
+                            status: 'Absent' // Save status as Absent
+                        };
+                    } else {
+                        const marks = {};
+                        row.querySelectorAll('.mark-input').forEach(input => {
+                            marks[input.dataset.subject] = parseFloat(input.value) || 0;
+                        });
+                        resultData = {
+                            studentId: row.dataset.id,
+                            studentName: row.dataset.name,
+                            testId: testRef.id,
+                            testName: testName,
+                            class: className,
+                            marks: marks // Save marks for present students
+                        };
+                    }
+                    
+                    const resultRef = db.collection('results').doc();
+                    batch.set(resultRef, resultData);
+                });
+
+                await batch.commit();
+                alert('Test and results saved successfully!');
+                window.location.reload();
+            } catch (error) {
+                console.error("Error saving data: ", error);
+                alert("An error occurred while saving. Please check the console.");
+            }
+        });
+    </script>
+</body>
+</html>
