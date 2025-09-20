@@ -37,7 +37,6 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
       margin-bottom: 25px;
       padding: 20px;
-      position: relative;
       transition: transform 0.2s ease;
     }
 
@@ -109,6 +108,11 @@
       background-color: #0b5ed7;
     }
 
+    .btn-result[disabled] {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
     .footer {
       text-align: center;
       margin-top: 40px;
@@ -135,7 +139,6 @@
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
@@ -146,22 +149,23 @@
       projectId: "xperts-data",
       storageBucket: "xperts-data.appspot.com",
       messagingSenderId: "934675149024",
-      appId: "1:934675149024:web:23486a5f38f65f103ce085",
-      measurementId: "G-6TS06NTDZQ"
+      appId: "1:934675149024:web:23486a5f38f65f103ce085"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     document.addEventListener('DOMContentLoaded', () => {
-      // ✅ Check authentication first
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          localStorage.setItem('user', JSON.stringify({ id: user.uid, email: user.email, role: 'Student' }));
-          loadTests();
-        } else {
-          window.location.href = 'index.html';
-        }
-      });
+      // ✅ Check authentication from localStorage
+      const userId = localStorage.getItem('loggedInUserId');
+      const userRole = localStorage.getItem('loggedInUserRole');
+
+      if (!userId || userRole !== "Student") {
+        // Not logged in → back to login
+        window.location.href = "index.html";
+      } else {
+        // Logged in → load tests
+        loadTests();
+      }
     });
 
     async function loadTests() {
@@ -178,10 +182,10 @@
           const testDate = new Date(test.date);
           const formattedDate = testDate.toLocaleDateString('en-GB', {
             day: '2-digit',
-            month: 'short'
+            month: 'short',
+            year: 'numeric'
           });
 
-          // Check if results are available
           const statusClass = test.resultsAvailable ? "status-bar" : "status-bar upcoming";
           const statusText = test.resultsAvailable ? "Results are out" : "Upcoming Test";
 
