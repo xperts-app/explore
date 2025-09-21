@@ -6,29 +6,123 @@
     <title>Your Tests</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-blue: #007bff; --background-color: #f0f4f9; --text-dark: #212529; --text-light: #6c757d; --card-bg: #ffffff; --border-color: #e9ecef; --success-bg: #e6f6f2; --success-text: #008767; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); margin: 0; padding: 20px; color: var(--text-dark); }
-        .main-container { display: none; max-width: 500px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        h2 { font-size: 20px; font-weight: 600; margin: 0; }
-        .header a { font-size: 16px; font-weight: 500; color: var(--primary-blue); text-decoration: none; }
-        .test-carousel-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 16px; padding-bottom: 16px; scrollbar-width: none; -ms-overflow-style: none; }
-        .test-carousel-container::-webkit-scrollbar { display: none; }
-        .test-card { flex: 0 0 90%; max-width: 90%; background-color: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border-color); scroll-snap-align: start; box-sizing: border-box; display: flex; flex-direction: column; }
-        .card-content { flex-grow: 1; }
-        .results-banner { background-color: var(--success-bg); color: var(--success-text); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; display: inline-block; margin-bottom: 16px; }
-        h3 { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
-        .test-details { color: var(--text-light); font-size: 14px; margin-bottom: 24px; }
-        .btn-view-result { background-color: var(--primary-blue); color: #fff; border: none; padding: 14px 0; border-radius: 12px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; text-align: center; text-decoration: none; display: block; }
-        p#loading-message { text-align: center; font-size: 18px; color: var(--text-light); }
+        :root {
+            --primary-blue: #007bff;
+            --background-color: #f0f4f9;
+            --text-dark: #212529;
+            --text-light: #6c757d;
+            --card-bg: #ffffff;
+            --success-bg: #e6f6f2;
+            --success-text: #008767;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+        .main-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .header a {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+        .test-carousel-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 16px;
+            padding-bottom: 16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .test-carousel-container::-webkit-scrollbar {
+            display: none;
+        }
+        .test-card {
+            flex: 0 0 90%; /* Each card takes 90% of the container width */
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            scroll-snap-align: start;
+            /* === CSS FIX FOR UNIFORM SIZE === */
+            display: flex;
+            flex-direction: column;
+        }
+        .card-content {
+            flex-grow: 1; /* This pushes the button to the bottom */
+        }
+        .results-banner {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+        .test-details {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-view-result {
+            background-color: var(--primary-blue);
+            color: #fff;
+            border: none;
+            padding: 14px 0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            margin-top: auto; /* Pushes button to bottom */
+        }
+        #loading-message {
+            text-align: center;
+            color: var(--text-light);
+            width: 100%;
+        }
     </style>
 </head>
 <body>
-    <p id="loading-message">Loading your dashboard...</p>
-    <div class="main-container" id="student-container">
-        <div class="header"><h2>Your tests</h2><a href="report-list.html">View all</a></div>
-        <div class="test-carousel-container" id="test-list"></div>
+    <div class="main-container" id="student-dashboard" style="display: none;">
+        <div class="header">
+            <h2>Your tests</h2>
+            <a href="report-list.html">View all</a>
+        </div>
+        <div class="test-carousel-container" id="test-list">
+            <!-- Test cards will be inserted here -->
+        </div>
     </div>
+    <p id="loading-message">Loading dashboard...</p>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -39,28 +133,34 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentId = localStorage.getItem('loggedInUserId');
-            if (!studentId || localStorage.getItem('loggedInUserRole') !== 'Student') {
-                window.location.href = 'index.html';
+            // This is the check to see if the user has already logged in.
+            if (!studentId) {
+                window.location.href = 'index.html'; // Redirect to login page if not logged in
                 return;
             }
+            // If logged in, show the content and fetch tests
             document.getElementById('loading-message').style.display = 'none';
-            document.getElementById('student-container').style.display = 'block';
+            document.getElementById('student-dashboard').style.display = 'block';
             fetchStudentTests(studentId);
         });
 
         async function fetchStudentTests(studentId) {
-            const testListContainer = document.getElementById('test-list');
+            const container = document.getElementById('test-list');
+            container.innerHTML = '<p id="loading-message">Loading recent tests...</p>';
             try {
                 const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').limit(5).get();
-                let testsFound = false;
+                let testsHTML = '';
                 snapshot.forEach(doc => {
+                    // Check if this test has a result for the logged-in student
                     if (doc.data().results && doc.data().results[studentId]) {
-                        testsFound = true;
-                        testListContainer.innerHTML += createTestCard(doc.id, doc.data());
+                        testsHTML += createTestCard(doc.id, doc.data());
                     }
                 });
-                if (!testsFound) testListContainer.innerHTML = "<p>No recent tests found.</p>";
-            } catch (error) { console.error(error); testListContainer.innerHTML = "<p>Could not load tests.</p>"; }
+                container.innerHTML = testsHTML || "<p id='loading-message'>No recent tests found.</p>";
+            } catch (error) {
+                console.error("Error fetching tests: ", error);
+                container.innerHTML = "<p id='loading-message'>Could not load tests.</p>";
+            }
         }
 
         function createTestCard(testId, testData) {
@@ -70,7 +170,11 @@
                     <div class="card-content">
                         <div class="results-banner">Results are out</div>
                         <h3>${testData.testName}</h3>
-                        <div class="test-details"><span>${testDate}</span> | <span>180 Min</span> | <span>${testData.mode}</span></div>
+                        <div class="test-details">
+                            <span>📅 ${testDate}</span>
+                            <span>⏱️ 180 Min</span>
+                            <span>📝 ${testData.mode}</span>
+                        </div>
                     </div>
                     <a href="report-detail.html?testId=${testId}" class="btn-view-result">View Result</a>
                 </div>`;
