@@ -15,33 +15,12 @@
             --border-color: #e9ecef;
             --danger-text: #dc3545;
         }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--background-color);
-            margin: 0;
-            color: var(--text-dark);
-        }
-        .header {
-            background-color: var(--card-bg);
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); margin: 0; color: var(--text-dark); }
+        .header { background-color: var(--card-bg); padding: 15px 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .header a { font-size: 24px; color: var(--text-dark); text-decoration: none; }
         .header h1 { font-size: 18px; font-weight: 600; margin: 0; }
-        .content-area {
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-        }
-        /* === CSS FIX: Added Grid for uniform rows === */
-        #report-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
+        .content-area { padding: 20px; max-width: 600px; margin: auto; }
+        #report-list { display: grid; grid-template-columns: 1fr; gap: 16px; }
         a.report-card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -49,30 +28,15 @@
             text-decoration: none;
             color: inherit;
             padding: 15px 20px;
-            /* === CSS FIX: Internal Flexbox for alignment === */
             display: flex;
             flex-direction: column;
         }
-        .card-content {
-            flex-grow: 1; /* Pushes footer to the bottom */
-        }
-        .list-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .card-content { flex-grow: 1; }
+        .list-item-header { display: flex; justify-content: space-between; align-items: center; }
         h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px 0; }
         .arrow-icon { font-weight: bold; color: var(--text-light); }
         p.test-id { font-size: 14px; color: var(--text-light); margin: 0 0 12px 0; }
-        .list-item-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            margin-top: 12px;
-        }
+        .list-item-footer { display: flex; justify-content: space-between; align-items: center; font-size: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; }
         .marks { font-weight: 600; font-size: 16px; }
         .absent { color: var(--danger-text); font-weight: 600; }
         #loading-message { text-align: center; padding: 40px; color: var(--text-light); }
@@ -119,10 +83,7 @@
                     }
                 });
                 listContainer.innerHTML = reportsHTML || "<p>No reports found.</p>";
-            } catch (error) {
-                console.error("Error fetching reports:", error);
-                listContainer.innerHTML = "<p>Could not load reports.</p>";
-            }
+            } catch (error) { console.error("Error fetching reports:", error); }
         }
 
         function createReportCard(testId, testData, result) {
@@ -130,8 +91,8 @@
             const marksHTML = result.status === 'Absent' ? `<span class="absent">Absent</span>` : `<span class="marks">${result.totalMarks}</span>`;
             
             return `
-                <a href="report-detail.html?testId=${testId}" class="report-card">
-                    <!-- This wrapper allows the footer to be pushed to the bottom -->
+                <!-- CHANGE: Added target="_blank" to the entire card link -->
+                <a href="index.html?testId=${testId}" class="report-card" target="_blank" rel="noopener noreferrer">
                     <div class="card-content"> 
                         <div class="list-item-header">
                             <h3>${testData.testName}</h3>
