@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Tests</title>
+    <title>All Test Reports</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,87 +12,79 @@
             --text-dark: #212529;
             --text-light: #6c757d;
             --card-bg: #ffffff;
-            --success-bg: #e6f6f2;
-            --success-text: #008767;
+            --border-color: #e9ecef;
+            --danger-text: #dc3545;
         }
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--background-color);
             margin: 0;
-            padding: 20px;
             color: var(--text-dark);
         }
-        .main-container {
-            max-width: 500px;
-            margin: 0 auto;
-            display: none;
-        }
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        h2 { font-size: 20px; font-weight: 600; margin: 0; }
-        .header a { font-size: 16px; font-weight: 500; color: var(--primary-blue); text-decoration: none; }
-        .test-carousel-container {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            gap: 16px;
-            padding-bottom: 16px;
-            scrollbar-width: none;
-        }
-        .test-carousel-container::-webkit-scrollbar { display: none; }
-        .test-card {
-            flex: 0 0 90%;
             background-color: var(--card-bg);
-            border-radius: 16px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header a { font-size: 24px; color: var(--text-dark); text-decoration: none; }
+        .header h1 { font-size: 18px; font-weight: 600; margin: 0; }
+        .content-area {
             padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+        /* === CSS FIX: Added Grid for uniform rows === */
+        #report-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        a.report-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            scroll-snap-align: start;
-            /* === CSS for Uniform Height === */
+            text-decoration: none;
+            color: inherit;
+            padding: 15px 20px;
+            /* === CSS FIX: Internal Flexbox for alignment === */
             display: flex;
             flex-direction: column;
         }
-        .card-content { flex-grow: 1; }
-        .results-banner {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            padding: 6px 12px;
-            border-radius: 20px;
+        .card-content {
+            flex-grow: 1; /* Pushes footer to the bottom */
+        }
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px 0; }
+        .arrow-icon { font-weight: bold; color: var(--text-light); }
+        p.test-id { font-size: 14px; color: var(--text-light); margin: 0 0 12px 0; }
+        .list-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 14px;
-            font-weight: 500;
-            display: inline-block;
-            margin-bottom: 16px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
         }
-        h3 { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
-        .test-details { display: flex; align-items: center; gap: 16px; color: var(--text-light); font-size: 14px; margin-bottom: 24px; }
-        .test-details span { display: flex; align-items: center; gap: 6px; }
-        .test-details svg { width: 16px; height: 16px; fill: currentColor; }
-        .btn-view-result {
-            background-color: var(--primary-blue);
-            color: #fff;
-            border: none;
-            padding: 14px 0;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
-            margin-top: auto;
-        }
-        #loading-message { text-align: center; padding-top: 50px; color: var(--text-light); }
+        .marks { font-weight: 600; font-size: 16px; }
+        .absent { color: var(--danger-text); font-weight: 600; }
+        #loading-message { text-align: center; padding: 40px; color: var(--text-light); }
     </style>
 </head>
 <body>
-    <div class="main-container" id="student-dashboard">
-        <div class="header">
-            <h2>Your tests</h2>
-            <a href="2.html">View all</a>
-        </div>
-        <div class="test-carousel-container" id="test-list"></div>
+    <div class="header">
+        <a href="1.html">&larr;</a>
+        <h1>Performance Report</h1>
+    </div>
+    <div class="content-area" id="main-content" style="display: none;">
+        <div id="report-list"></div>
     </div>
     <p id="loading-message">Verifying your login...</p>
 
@@ -110,44 +102,49 @@
                 return;
             }
             document.getElementById('loading-message').style.display = 'none';
-            document.getElementById('student-dashboard').style.display = 'block';
-            fetchStudentTests(studentId);
+            document.getElementById('main-content').style.display = 'block';
+            fetchAllReports(studentId);
         });
 
-        async function fetchStudentTests(studentId) {
-            const container = document.getElementById('test-list');
-            container.innerHTML = '<p id="loading-message" style="width: 100%;">Loading recent tests...</p>';
+        async function fetchAllReports(studentId) {
+            const listContainer = document.getElementById('report-list');
+            listContainer.innerHTML = '<p id="loading-message">Loading all reports...</p>';
             try {
-                const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').limit(5).get();
-                let testsHTML = '';
+                const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').get();
+                let reportsHTML = '';
                 snapshot.forEach(doc => {
-                    if (doc.data().results && doc.data().results[studentId]) {
-                        testsHTML += createTestCard(doc.id, doc.data());
+                    const test = doc.data();
+                    if (test.results && test.results[studentId]) {
+                        reportsHTML += createReportCard(doc.id, test, test.results[studentId]);
                     }
                 });
-                container.innerHTML = testsHTML || "<p id='loading-message' style='width: 100%;'>No recent tests found.</p>";
+                listContainer.innerHTML = reportsHTML || "<p>No reports found.</p>";
             } catch (error) {
-                console.error("Error fetching tests:", error);
-                container.innerHTML = "<p id='loading-message' style='width: 100%;'>Could not load tests.</p>";
+                console.error("Error fetching reports:", error);
+                listContainer.innerHTML = "<p>Could not load reports.</p>";
             }
         }
 
-        function createTestCard(testId, testData) {
-            const testDate = new Date(testData.testDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        function createReportCard(testId, testData, result) {
+            const date = testData.testDate.split('-').reverse().join('-');
+            const marksHTML = result.status === 'Absent' ? `<span class="absent">Absent</span>` : `<span class="marks">${result.totalMarks}</span>`;
+            
             return `
-                <div class="test-card">
-                    <div class="card-content">
-                        <div class="results-banner">Results are out</div>
-                        <h3>${testData.testName}</h3>
-                        <div class="test-details">
-                            <span><svg viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M1 6.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-1z"/></svg>${testDate}</span>
-                            <span><svg viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>180 Min</span>
-                            <span><svg viewBox="0 0 16 16"><path d="M12 1H4a1 1 0 0 0-1 1v10.755S4 11 8 11s5 1.755 5 1.755V2a1 1 0 0 0-1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>${testData.mode}</span>
+                <a href="report-detail.html?testId=${testId}" class="report-card">
+                    <!-- This wrapper allows the footer to be pushed to the bottom -->
+                    <div class="card-content"> 
+                        <div class="list-item-header">
+                            <h3>${testData.testName}</h3>
+                            <span class="arrow-icon">&gt;</span>
                         </div>
+                        <p class="test-id">(test_${testId.substring(0,10)}) ${date}</p>
                     </div>
-                    <a href="report-detail.html?testId=${testId}" class="btn-view-result">View Result</a>
-                </div>`;
+                    <div class="list-item-footer">
+                        <div><span>Pattern</span><br><strong>${testData.pattern || 'N/A'}</strong></div>
+                        <div><span>Marks</span><br>${marksHTML}</div>
+                    </div>
+                </a>`;
         }
     </script>
 </body>
-    </html>
+</html>
