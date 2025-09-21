@@ -25,6 +25,7 @@
         .main-container {
             max-width: 500px;
             margin: 0 auto;
+            display: none; /* Hidden until login is confirmed */
         }
         .header {
             display: flex;
@@ -52,23 +53,18 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
-        .test-carousel-container::-webkit-scrollbar {
-            display: none;
-        }
+        .test-carousel-container::-webkit-scrollbar { display: none; }
         .test-card {
-            flex: 0 0 90%; /* Each card takes 90% of the container width */
+            flex: 0 0 90%;
             background-color: var(--card-bg);
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             scroll-snap-align: start;
-            /* === CSS FIX FOR UNIFORM SIZE === */
             display: flex;
             flex-direction: column;
         }
-        .card-content {
-            flex-grow: 1; /* This pushes the button to the bottom */
-        }
+        .card-content { flex-grow: 1; }
         .results-banner {
             background-color: var(--success-bg);
             color: var(--success-text);
@@ -85,12 +81,22 @@
             margin: 0 0 12px 0;
         }
         .test-details {
+            display: flex;
+            align-items: center;
+            gap: 16px; /* Space between items */
             color: var(--text-light);
             font-size: 14px;
             margin-bottom: 24px;
+        }
+        .test-details span {
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 6px; /* Space between icon and text */
+        }
+        .test-details svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor; /* Icon takes the color of the text */
         }
         .btn-view-result {
             background-color: var(--primary-blue);
@@ -103,26 +109,24 @@
             width: 100%;
             text-align: center;
             text-decoration: none;
-            margin-top: auto; /* Pushes button to bottom */
+            margin-top: auto;
         }
         #loading-message {
             text-align: center;
+            padding-top: 50px;
             color: var(--text-light);
-            width: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="main-container" id="student-dashboard" style="display: none;">
+    <div class="main-container" id="student-dashboard">
         <div class="header">
             <h2>Your tests</h2>
-            <a href="report-list.html">View all</a>
+            <a href="2.html">View all</a>
         </div>
-        <div class="test-carousel-container" id="test-list">
-            <!-- Test cards will be inserted here -->
-        </div>
+        <div class="test-carousel-container" id="test-list"></div>
     </div>
-    <p id="loading-message">Loading dashboard...</p>
+    <p id="loading-message">Verifying your login...</p>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -133,12 +137,10 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentId = localStorage.getItem('loggedInUserId');
-            // This is the check to see if the user has already logged in.
             if (!studentId) {
-                window.location.href = 'index.html'; // Redirect to login page if not logged in
+                window.location.href = 'https://xperts-app.github.io/server/public/auth/1';
                 return;
             }
-            // If logged in, show the content and fetch tests
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('student-dashboard').style.display = 'block';
             fetchStudentTests(studentId);
@@ -146,20 +148,19 @@
 
         async function fetchStudentTests(studentId) {
             const container = document.getElementById('test-list');
-            container.innerHTML = '<p id="loading-message">Loading recent tests...</p>';
+            container.innerHTML = '<p id="loading-message" style="width: 100%;">Loading recent tests...</p>';
             try {
                 const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').limit(5).get();
                 let testsHTML = '';
                 snapshot.forEach(doc => {
-                    // Check if this test has a result for the logged-in student
                     if (doc.data().results && doc.data().results[studentId]) {
                         testsHTML += createTestCard(doc.id, doc.data());
                     }
                 });
-                container.innerHTML = testsHTML || "<p id='loading-message'>No recent tests found.</p>";
+                container.innerHTML = testsHTML || "<p id='loading-message' style='width: 100%;'>No recent tests found.</p>";
             } catch (error) {
-                console.error("Error fetching tests: ", error);
-                container.innerHTML = "<p id='loading-message'>Could not load tests.</p>";
+                console.error("Error fetching tests:", error);
+                container.innerHTML = "<p id='loading-message' style='width: 100%;'>Could not load tests.</p>";
             }
         }
 
@@ -171,9 +172,18 @@
                         <div class="results-banner">Results are out</div>
                         <h3>${testData.testName}</h3>
                         <div class="test-details">
-                            <span>📅 ${testDate}</span>
-                            <span>⏱️ 180 Min</span>
-                            <span>📝 ${testData.mode}</span>
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M1 6.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-1z"/></svg>
+                                ${testDate}
+                            </span>
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                                180 Min
+                            </span>
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M12 1H4a1 1 0 0 0-1 1v10.755S4 11 8 11s5 1.755 5 1.755V2a1 1 0 0 0-1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H4z"/><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+                                ${testData.mode}
+                            </span>
                         </div>
                     </div>
                     <a href="report-detail.html?testId=${testId}" class="btn-view-result">View Result</a>
