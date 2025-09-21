@@ -56,40 +56,47 @@
             color: inherit;
             padding: 15px 20px;
         }
-        .list-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
         h3 {
             font-size: 16px;
             font-weight: 600;
             margin: 0;
+            margin-bottom: 8px;
         }
-        .arrow-icon {
-            font-weight: bold;
-            color: var(--text-light);
-        }
-        p.test-id {
+        .test-meta {
             font-size: 14px;
             color: var(--text-light);
-            margin: 0 0 12px 0;
+            margin-bottom: 12px;
+        }
+        .test-details {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 16px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+        .test-details span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .test-details svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
         }
         .list-item-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
         }
-        .marks {
-            font-weight: 600;
-            font-size: 16px;
-        }
-        .absent {
-            color: var(--danger-text);
-            font-weight: 600;
-        }
+        .marks { font-weight: 600; font-size: 16px; }
+        .absent { color: var(--danger-text); font-weight: 600; }
         #loading-message {
             text-align: center;
             padding: 40px;
@@ -99,13 +106,13 @@
 </head>
 <body>
     <div class="header">
-        <a href="student.html">&larr;</a>
+        <a href="1.html">&larr;</a>
         <h1>Performance Report</h1>
     </div>
-    <div class="content-area">
+    <div class="content-area" id="main-content" style="display: none;">
         <div id="report-list"></div>
-        <p id="loading-message">Loading all reports...</p>
     </div>
+    <p id="loading-message">Verifying your login...</p>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -116,19 +123,19 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const studentId = localStorage.getItem('loggedInUserId');
-            // This is the check to see if the user has already logged in.
             if (!studentId) {
-                window.location.href = 'index.html'; // Redirect to login page if not logged in
+                window.location.href = 'https://xperts-app.github.io/server/public/auth/1';
                 return;
             }
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
             fetchAllReports(studentId);
         });
 
         async function fetchAllReports(studentId) {
             const listContainer = document.getElementById('report-list');
-            const loadingMessage = document.getElementById('loading-message');
+            listContainer.innerHTML = '<p id="loading-message">Loading all reports...</p>';
             try {
-                // Get all tests, not just the last 5
                 const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').get();
                 let reportsHTML = '';
                 snapshot.forEach(doc => {
@@ -137,25 +144,21 @@
                         reportsHTML += createReportCard(doc.id, test, test.results[studentId]);
                     }
                 });
-                loadingMessage.style.display = 'none';
                 listContainer.innerHTML = reportsHTML || "<p>No reports found.</p>";
             } catch (error) {
                 console.error("Error fetching reports:", error);
-                loadingMessage.textContent = "Could not load reports.";
+                listContainer.innerHTML = "<p>Could not load reports.</p>";
             }
         }
 
         function createReportCard(testId, testData, result) {
-            const date = testData.testDate.split('-').reverse().join('-');
+            const date = new Date(testData.testDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
             const marksHTML = result.status === 'Absent' ? `<span class="absent">Absent</span>` : `<span class="marks">${result.totalMarks}</span>`;
             
             return `
                 <a href="report-detail.html?testId=${testId}" class="list-item report-card">
-                    <div class="list-item-header">
-                        <h3>${testData.testName}</h3>
-                        <span class="arrow-icon">&gt;</span>
-                    </div>
-                    <p class="test-id">(test_${testId.substring(0,10)}) ${date}</p>
+                    <h3>${testData.testName}</h3>
+                    <p class="test-meta">(test_${testId.substring(0,10)})</p>
                     <div class="list-item-footer">
                         <div><span>Pattern</span><br><strong>${testData.pattern || 'N/A'}</strong></div>
                         <div><span>Marks</span><br>${marksHTML}</div>
