@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Tests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-blue: #007bff; --background-color: #f0f4f9; --text-dark: #212529; --text-light: #6c757d; --card-bg: #ffffff; --border-color: #e9ecef; --success-bg: #e6f6f2; --success-text: #008767; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); margin: 0; padding: 20px; color: var(--text-dark); }
+        .main-container { display: none; max-width: 500px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        h2 { font-size: 20px; font-weight: 600; margin: 0; }
+        .header a { font-size: 16px; font-weight: 500; color: var(--primary-blue); text-decoration: none; }
+        .test-carousel-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 16px; padding-bottom: 16px; scrollbar-width: none; -ms-overflow-style: none; }
+        .test-carousel-container::-webkit-scrollbar { display: none; }
+        .test-card { flex: 0 0 90%; max-width: 90%; background-color: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border-color); scroll-snap-align: start; box-sizing: border-box; display: flex; flex-direction: column; }
+        .card-content { flex-grow: 1; }
+        .results-banner { background-color: var(--success-bg); color: var(--success-text); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; display: inline-block; margin-bottom: 16px; }
+        h3 { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
+        .test-details { color: var(--text-light); font-size: 14px; margin-bottom: 24px; }
+        .btn-view-result { background-color: var(--primary-blue); color: #fff; border: none; padding: 14px 0; border-radius: 12px; font-size: 16px; font-weight: 600; width: 100%; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+        p#loading-message { text-align: center; font-size: 18px; color: var(--text-light); }
+    </style>
+</head>
+<body>
+    <p id="loading-message">Loading your dashboard...</p>
+    <div class="main-container" id="student-container">
+        <div class="header"><h2>Your tests</h2><a href="report-list.html">View all</a></div>
+        <div class="test-carousel-container" id="test-list"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyD-ers6CRuH8bCFomXJHuLxPWff-Xa4ZVk", authDomain: "xperts-data.firebaseapp.com", projectId: "xperts-data", storageBucket: "xperts-data.appspot.com", messagingSenderId: "934675149024", appId: "1:934675149024:web:23486a5f38f65f103ce085" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentId = localStorage.getItem('loggedInUserId');
+            if (!studentId || localStorage.getItem('loggedInUserRole') !== 'Student') {
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('student-container').style.display = 'block';
+            fetchStudentTests(studentId);
+        });
+
+        async function fetchStudentTests(studentId) {
+            const testListContainer = document.getElementById('test-list');
+            try {
+                const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').limit(5).get();
+                let testsFound = false;
+                snapshot.forEach(doc => {
+                    if (doc.data().results && doc.data().results[studentId]) {
+                        testsFound = true;
+                        testListContainer.innerHTML += createTestCard(doc.id, doc.data());
+                    }
+                });
+                if (!testsFound) testListContainer.innerHTML = "<p>No recent tests found.</p>";
+            } catch (error) { console.error(error); testListContainer.innerHTML = "<p>Could not load tests.</p>"; }
+        }
+
+        function createTestCard(testId, testData) {
+            const testDate = new Date(testData.testDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            return `
+                <div class="test-card">
+                    <div class="card-content">
+                        <div class="results-banner">Results are out</div>
+                        <h3>${testData.testName}</h3>
+                        <div class="test-details"><span>${testDate}</span> | <span>180 Min</span> | <span>${testData.mode}</span></div>
+                    </div>
+                    <a href="report-detail.html?testId=${testId}" class="btn-view-result">View Result</a>
+                </div>`;
+        }
+    </script>
+</body>
+</html>
