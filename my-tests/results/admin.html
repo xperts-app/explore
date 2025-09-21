@@ -3,27 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal - Xperts</title>
+    <title>Admin Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-blue: #0066ff; --background-color: #f0f4f9; --text-dark: #1d2c3c; --text-light: #5a6b7d; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); margin: 0; }
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-color); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .spinner { width: 50px; height: 50px; border: 5px solid rgba(0, 102, 255, 0.2); border-top-color: var(--primary-blue); border-radius: 50%; animation: spin 1s ease-in-out infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .main-container { display: none; max-width: 450px; margin: auto; padding: 5vh 20px 20px 20px; text-align: center; }
-        h2{font-weight:600;font-size:28px;color:var(--text-dark);margin-bottom:12px}p.subtitle{color:var(--text-light);font-size:16px;margin-bottom:40px;line-height:1.6}.input-group{margin-bottom:25px;text-align:left}label{display:block;margin-bottom:8px;font-weight:500;font-size:14px;color:var(--text-dark)}input{width:100%;padding:15px;border:1px solid #dbe2ea;border-radius:12px;font-size:16px;box-sizing:border-box;font-family:'Poppins',sans-serif;}input:focus{outline:0;border-color:var(--primary-blue);box-shadow:0 0 0 4px rgba(0,102,255,.1)}.btn-primary{background-color:var(--primary-blue);color:#fff;border:none;padding:16px 0;border-radius:12px;font-size:18px;font-weight:600;width:100%;cursor:pointer;}.btn-primary:disabled{background-color:#a0cffd;cursor:not-allowed}#password-container{display:none}.error-msg{color:#dc3545;font-weight:500;margin-top:20px;min-height:1.2em}
+        :root { --primary-blue: #0066ff; --background-color: #f0f4f9; --text-dark: #1d2c3c; --card-bg: #ffffff; --border-color: #e0e6ed; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background-color: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        h1, h2 { color: var(--text-dark); }
+        .form-section { margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .checkbox-group label { display: inline-block; margin-right: 15px; font-weight: 400; }
+        .btn { background-color: var(--primary-blue); color: #fff; border: none; padding: 14px 20px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; }
+        #subjects-container, #students-container { display: none; }
+        .student-entry { padding: 15px; border-radius: 8px; background-color: #f8f9fa; margin-bottom: 10px; }
+        .student-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .marks-inputs-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="spinner"></div></div>
-    <div class="main-container" id="login-container">
-        <h2>Student Portal</h2>
-        <p class="subtitle">Enter your mobile number to sign in and continue your learning journey.</p>
-        <div id="login-form">
-            <div class="input-group"><label for="mobile">Mobile Number</label><input type="tel" id="mobile" name="mobile" placeholder="10-digit mobile number" maxlength="10"></div>
-            <div id="password-container"><div class="input-group"><label for="password">Password</label><input type="password" id="password" name="password" placeholder="Enter your password"></div></div>
-            <button type="button" class="btn-primary" id="submit-btn">Continue</button><p id="error-message" class="error-msg"></p>
+    <div class="container">
+        <h1>Create New Test</h1>
+        <div class="form-section">
+            <h2>1. Test Details</h2>
+            <div class="form-group"><label for="testName">Test Name</label><input type="text" id="testName" placeholder="e.g., Minor Test 01"></div>
+            <div class="form-group"><label for="testDate">Test Date</label><input type="date" id="testDate"></div>
+            <div class="form-group"><label for="testMode">Mode of Test</label><select id="testMode"><option value="Online">Online</option><option value="Offline">Offline</option></select></div>
+            <div class="form-group"><label for="testPattern">Test Pattern</label><input type="text" id="testPattern" placeholder="e.g., PNCF"></div>
+            <div class="form-group"><label for="testClass">Select Class</label><select id="testClass"><option value="">-- Select --</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11 JEE+NEET">11 JEE+NEET</option><option value="12 JEE+NEET">12 JEE+NEET</option></select></div>
+        </div>
+        <div class="form-section" id="subjects-container">
+            <h2>2. Select Subjects</h2>
+            <div id="subjects-list" class="checkbox-group"></div>
+            <button id="fetchStudentsBtn" class="btn" style="margin-top: 15px;">Fetch Students</button>
+        </div>
+        <div class="form-section" id="students-container">
+            <h2>3. Enter Student Marks</h2>
+            <div id="student-marks-list"></div>
+            <button id="saveTestBtn" class="btn" style="margin-top: 15px;">Save Test Results</button>
         </div>
     </div>
 
@@ -34,70 +52,78 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Check if a student is already logged in
-        (function handleAuthFlow() {
-            const userId = localStorage.getItem('loggedInUserId');
-            const userRole = localStorage.getItem('loggedInUserRole');
-            if (userId && userRole === 'Student') {
-                window.location.replace('student.html');
-            } else {
-                localStorage.clear();
-                document.getElementById('loading-overlay').style.display = 'none';
-                document.getElementById('login-container').style.display = 'block';
-            }
-        })();
+        const subjectsByClass = { "6-10": ["English", "Social Science", "Physics", "Chemistry", "Biology", "Maths"], "11-12": ["Physics", "Chemistry", "Biology", "Maths"] };
+        const testClassSelect = document.getElementById('testClass');
+        const subjectsContainer = document.getElementById('subjects-container');
+        const subjectsList = document.getElementById('subjects-list');
+        const studentsContainer = document.getElementById('students-container');
+        const studentMarksList = document.getElementById('student-marks-list');
 
-        const mobileInput = document.getElementById('mobile');
-        const passwordContainer = document.getElementById('password-container');
-        const passwordInput = document.getElementById('password');
-        const submitBtn = document.getElementById('submit-btn');
-        const errorMessage = document.getElementById('error-message');
-        let userData = null;
+        testClassSelect.addEventListener('change', () => {
+            const selectedClass = testClassSelect.value;
+            subjectsList.innerHTML = ''; studentsContainer.style.display = 'none';
+            if (!selectedClass) { subjectsContainer.style.display = 'none'; return; }
+            const classGroup = (parseInt(selectedClass) >= 6 && parseInt(selectedClass) <= 10) ? "6-10" : "11-12";
+            subjectsByClass[classGroup].forEach(subject => { subjectsList.innerHTML += `<label><input type="checkbox" name="subject" value="${subject}" checked> ${subject}</label>`; });
+            subjectsContainer.style.display = 'block';
+        });
 
-        submitBtn.addEventListener('click', async () => {
-            submitBtn.disabled = true; submitBtn.textContent = 'Verifying...'; errorMessage.textContent = '';
-            
-            // Step 1: Find user by mobile number
-            if (!userData) {
-                try {
-                    const snapshot = await db.collection('users').where('mobileNumber', '==', mobileInput.value.trim()).get();
-                    if (snapshot.empty) {
-                        errorMessage.textContent = 'No student account found with this mobile number.';
-                        submitBtn.disabled = false; submitBtn.textContent = 'Continue';
-                        return;
+        document.getElementById('fetchStudentsBtn').addEventListener('click', async (e) => {
+            const btn = e.target;
+            const selectedClass = testClassSelect.value; if (!selectedClass) { alert('Please select a class.'); return; }
+            btn.disabled = true; btn.textContent = 'Fetching...';
+            studentMarksList.innerHTML = 'Loading students...'; studentsContainer.style.display = 'block';
+            try {
+                let query = selectedClass.includes('JEE+NEET')
+                    ? db.collection('users').where('class', 'in', [`${parseInt(selectedClass)} JEE`, `${parseInt(selectedClass)} NEET`])
+                    : db.collection('users').where('class', '==', selectedClass);
+                const snapshot = await query.where('role', '==', 'Student').get();
+                studentMarksList.innerHTML = ''; if (snapshot.empty) { studentMarksList.innerHTML = '<p>No students found for this class.</p>'; return; }
+                const selectedSubjects = Array.from(document.querySelectorAll('input[name="subject"]:checked')).map(cb => cb.value);
+                snapshot.forEach(doc => {
+                    let marksInputsHTML = selectedSubjects.map(subject => `<div class="form-group"><label>${subject}</label><input type="number" class="subject-mark" data-subject="${subject}" placeholder="Marks"></div>`).join('');
+                    studentMarksList.innerHTML += `<div class="student-entry" data-id="${doc.id}"><div class="student-header"><strong>${doc.data().fullName}</strong><label><input type="checkbox" class="absent-check"> Absent</label></div><div class="marks-inputs-container">${marksInputsHTML}</div></div>`;
+                });
+                document.querySelectorAll('.absent-check').forEach(cb => cb.addEventListener('change', el => {
+                    el.target.closest('.student-entry').querySelector('.marks-inputs-container').style.display = el.target.checked ? 'none' : 'grid';
+                }));
+            } catch (error) { console.error(error); studentMarksList.innerHTML = '<p>Error loading students.</p>'; }
+             finally { btn.disabled = false; btn.textContent = 'Fetch Students'; }
+        });
+
+        document.getElementById('saveTestBtn').addEventListener('click', async (e) => {
+            const btn = e.target;
+            btn.disabled = true; btn.textContent = 'Saving...';
+            try {
+                const testData = {
+                    testName: document.getElementById('testName').value, testDate: document.getElementById('testDate').value,
+                    mode: document.getElementById('testMode').value, pattern: document.getElementById('testPattern').value,
+                    class: testClassSelect.value, results: {}, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if(!testData.testName || !testData.testDate || !testData.class) { alert('Please fill all test details.'); btn.disabled = false; return; }
+                let studentAppeared = 0;
+                document.querySelectorAll('.student-entry').forEach(entry => {
+                    const isAbsent = entry.querySelector('.absent-check').checked;
+                    const studentId = entry.dataset.id;
+                    const result = { status: isAbsent ? 'Absent' : 'Present', subjectMarks: {}, totalMarks: 0 };
+                    if (!isAbsent) {
+                        studentAppeared++; let total = 0;
+                        entry.querySelectorAll('.subject-mark').forEach(markInput => {
+                            const marks = parseFloat(markInput.value) || 0;
+                            result.subjectMarks[markInput.dataset.subject] = marks;
+                            total += marks;
+                        });
+                        result.totalMarks = total;
                     }
-                    const userDoc = snapshot.docs[0];
-                    userData = { id: userDoc.id, ...userDoc.data() };
-
-                    if (userData.role !== 'Student') {
-                         errorMessage.textContent = 'This portal is for students only.';
-                         userData = null; // Reset user data
-                         submitBtn.disabled = false; submitBtn.textContent = 'Continue';
-                         return;
-                    }
-                    
-                    passwordContainer.style.display = 'block';
-                    passwordInput.focus();
-                    submitBtn.textContent = 'Sign In';
-                } catch (error) {
-                    errorMessage.textContent = 'An error occurred. Please try again.';
-                } finally {
-                    submitBtn.disabled = false;
-                }
-            } 
-            // Step 2: Verify password
-            else {
-                if (userData.password === passwordInput.value) {
-                    localStorage.setItem('loggedInUserId', userData.id);
-                    localStorage.setItem('loggedInUserRole', userData.role);
-                    window.location.replace('student.html');
-                } else {
-                    errorMessage.textContent = 'Incorrect password. Please try again.';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign In';
-                }
-            }
+                    testData.results[studentId] = result;
+                });
+                testData.studentAppear = studentAppeared;
+                await db.collection('tests').add(testData);
+                alert('Test saved successfully!');
+                studentsContainer.style.display = 'none'; // Hide after saving
+            } catch (error) { console.error(error); alert('Error saving test.'); }
+             finally { btn.disabled = false; btn.textContent = 'Save Test Results'; }
         });
     </script>
 </body>
-</html>
+    </html>
